@@ -1,0 +1,210 @@
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{
+font-family:'Playfair Display',serif;
+background-image: url('assets/background.jpg');
+background-position: center 0%;
+background-size: cover;
+background-repeat: no-repeat;
+color:#f5f2e7;
+}
+
+.hero{
+min-height:100vh;
+position:relative;
+display:flex;
+align-items:center;
+justify-content:center;
+text-align:center;
+}
+
+.overlay{
+position:absolute;
+inset: 0px;
+background:radial-gradient(circle at center, rgba(1, 29, 10, 0.664) 5%, rgba(0, 0, 0, 0.918));
+}
+
+.hero-content{
+position:relative;
+z-index:2;
+}
+
+.logo{
+width:390px;
+margin-bottom:30px;
+filter:drop-shadow(0 0 47px rgba(56, 228, 93, 0.747));
+transition: transform 0.6s ease;
+}
+
+h1{
+font-family:'Great Vibes',cursive;
+font-size:4.6rem;
+background:linear-gradient(#fff3c4,#c8a94c);
+-webkit-background-clip:text;
+background-clip:text;
+-webkit-text-fill-color:transparent;
+text-shadow:0 0 45px rgba(255,215,120,0.6);
+margin-bottom:25px;
+transition: transform 0.6s ease;
+}
+
+.search{
+display:flex;
+justify-content:center;
+margin-bottom:27px;
+}
+
+.search input{
+padding:14px;
+width:340px;
+border:none;
+border-radius:30px 0 0 30px;
+}
+
+.search button{
+padding:14px 20px;
+border:none;
+border-radius:0 30px 30px 0;
+background:#6a7c4b;
+color:white;
+cursor:pointer;
+}
+
+.cta button{
+padding:14px 35px;
+border-radius:40px;
+border:none;
+margin:10px;
+cursor:pointer;
+position:relative;
+overflow:hidden;
+font-weight:600;
+letter-spacing:1px;
+transition:all 0.4s ease;
+box-shadow:0 0 15px rgba(0,0,0,0.3);
+}
+
+/* brillo deslizante */
+.cta button::before{
+content:"";
+position:absolute;
+top:0;
+left:-100%;
+width:100%;
+height:100%;
+background:linear-gradient(120deg,transparent,rgba(255,255,255,0.4),transparent);
+transition:0.6s;
+}
+
+.cta button:hover::before{
+left:100%;
+}
+
+.cta button:hover{
+transform:translateY(-6px) scale(1.05);
+box-shadow:0 15px 35px rgba(0,0,0,0.6);
+}
+
+.primary{background:#5a7f49;color:white}
+.secondary{background:#9b6a4c;color:white}
+
+.products{
+padding:80px 40px;
+background:rgba(0,0,0,0.7);
+}
+
+.products h2{
+text-align:center;
+font-size:2.5rem;
+margin-bottom:40px;
+}
+
+.product-grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+gap:30px;
+}
+
+.card{
+background:rgba(30,60,30,0.85);
+padding:25px;
+border-radius:25px;
+text-align:center;
+transition:all 0.5s ease;
+position:relative;
+overflow:hidden;
+cursor:pointer;
+}
+
+.card:hover{
+transform:translateY(-12px) scale(1.03);
+box-shadow:0 25px 60px rgba(0,0,0,0.6);
+}
+
+/* brillo interno sutil */
+.card::after{
+content:"";
+position:absolute;
+top:-100%;
+left:0;
+width:100%;
+height:100%;
+background:linear-gradient(180deg,rgba(255,255,255,0.1),transparent);
+transition:0.6s;
+}
+
+.card:hover::after{
+top:100%;
+}
+
+.card img{
+width:100%;
+border-radius:15px;
+margin-bottom:15px;
+}
+
+.card button{
+margin-top:15px;
+padding:12px 28px;
+border:none;
+border-radius:30px;
+background:linear-gradient(45deg,#4c7a3c,#6fbf5f);
+color:white;
+cursor:pointer;
+transition:all 0.3s ease;
+font-weight:600;
+letter-spacing:0.5px;
+}
+
+.card button:hover{
+transform:scale(1.1);
+box-shadow:0 0 25px rgba(140,255,120,0.8);
+}
+
+.card.active{
+border:2px solid #8bd66f;
+box-shadow:0 0 30px rgba(140,255,120,0.8);
+}
+
+.whatsapp-btn{
+position:fixed;
+bottom:25px;
+right:25px;
+width:65px;
+height:65px;
+background:#25D366;
+color:white;
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:28px;
+text-decoration:none;
+box-shadow:0 10px 25px rgba(0,0,0,0.4);
+z-index:9999;
+transition:all 0.3s ease;
+}
+
+.whatsapp-btn:hover{
+transform:scale(1.1);
+}
