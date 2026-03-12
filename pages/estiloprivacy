@@ -1,0 +1,37 @@
+/* PAGINA POLITICAS */
+
+.policy-body{
+background: #fafafa;
+font-family: Arial, sans-serif;
+}
+
+.policy-container{
+max-width: 800px;
+margin: 80px auto;
+padding: 40px;
+background: white;
+border-radius: 10px;
+box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+}
+
+.policy-container h1{
+margin-bottom: 10px;
+}
+
+.policy-container h2{
+margin-top: 30px;
+}
+
+.policy-container ul{
+margin-left: 20px;
+}
+
+.update{
+color: gray;
+font-size: 14px;
+}
+
+.brand{
+margin-top: 40px;
+font-weight: bold;
+}
