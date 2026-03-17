@@ -1,0 +1,116 @@
+/* Estilos generales del cuerpo */
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f9;
+}
+
+/* Estilos de la sección de contacto */
+.contact-section {
+    text-align: center;
+    padding: 50px 20px;
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    max-width: 600px;
+    margin: 50px auto;
+    position: relative; /* Para posicionar la imagen de fondo */
+    overflow: hidden; /* Para que la imagen de fondo no se desborde */
+}
+
+/* Estilos del título con animación */
+.contact-section h2 {
+    font-size: 2.5em;
+    margin-bottom: 20px;
+    color: #4b0082; /* Morado oscuro */
+    animation: fadeIn 2s ease-out; /* Animación de entrada */
+}
+
+/* Contenedor del contador y la descripción */
+.counter-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+/* Estilos del contador */
+.counter {
+    font-size: 3em;
+    font-weight: bold;
+    color: #8a2be2; /* Morado intermedio */
+    margin-bottom: 10px;
+    padding: 20px;
+    background: linear-gradient(145deg, #e6e6e6, #ffffff);
+    box-shadow: 20px 20px 60px #d9d9d9, -20px -20px 60px #ffffff;
+    border-radius: 50%;
+    width: 120px;
+    height: 120px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Estilos de la descripción */
+.counter-container p {
+    font-size: 1.2em;
+    color: #666;
+    max-width: 500px;
+    margin: 0 auto;
+    padding-top: 20px; /* Espacio entre contador y texto */
+}
+
+/* Contenedor de botones sociales */
+.button-container {
+    display: flex;
+    justify-content: center;
+    gap: 20px; /* Espacio entre botones */
+    margin-top: 20px;
+}
+
+/* Estilos de los botones sociales */
+.social-button {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    background-color: #4b0082; /* Morado oscuro */
+    color: white;
+    padding: 10px 20px;
+    border-radius: 50px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.social-button img {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+}
+
+.social-button:hover {
+    background-color: #8a2be2; /* Morado intermedio */
+    transform: scale(1.05); /* Efecto de agrandamiento */
+}
+
+/* Animación de entrada */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Imagen de fondo decorativa */
+.background-illustration {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 150px;
+    opacity: 0.1; /* Transparente para no distraer */
+    pointer-events: none; /* Para que no interfiera con los clics */
+}

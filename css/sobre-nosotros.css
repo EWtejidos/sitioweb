@@ -1,0 +1,95 @@
+/* Estilos generales para el cuerpo del documento */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+/* Estilos para la barra de navegación */
+.navbar {
+    background-color: #333;
+    overflow: hidden;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+.navbar ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+}
+
+.navbar ul li {
+    display: inline;
+}
+
+.navbar ul li a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 20px;
+    text-decoration: none;
+}
+
+.navbar ul li a:hover {
+    background-color: #111;
+}
+
+/* Estilos para el contenedor principal */
+.container {
+    display: flex;
+    justify-content: space-between;
+    padding: 100px 50px; /* Añade espacio alrededor del contenido */
+    margin-top: 60px; /* Añade un margen superior para evitar la superposición con la barra de navegación */
+}
+
+/* Estilos para la sección izquierda */
+.left {
+    flex: 1;
+    margin-right: 20px; /* Añade un espacio a la derecha */
+}
+
+.left h1 {
+    font-size: 2.5em;
+    margin-bottom: 20px;
+}
+
+.left p {
+    font-size: 1.2em;
+    line-height: 1.6;
+}
+
+/* Estilos para la sección derecha */
+.right {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.image-placeholder {
+    width: 80%;
+    height: 400px;
+    background-color: #eaeaea;
+    border: 2px dashed #ccc;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.image-placeholder::before {
+    content: "Espacio para una imagen";
+    color: #aaa;
+    font-size: 1.2em;
+}
+
+/* Estilos generales para el cuerpo del documento */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+/* Estilos para la barra
