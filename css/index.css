@@ -1,0 +1,523 @@
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{
+font-family:'Playfair Display',serif;
+background-image: url('../images/Branding/background.jpg');
+background-position: center 0%;
+background-size: cover;
+background-repeat: no-repeat;
+color:#f5f2e7;
+}
+
+.hero{
+min-height:100vh;
+position:relative;
+display:flex;
+align-items:center;
+justify-content:center;
+text-align:center;
+}
+
+.overlay{
+position:absolute;
+inset: 0px;
+background:radial-gradient(circle at center, rgba(1, 29, 10, 0.664) 5%, rgba(0, 0, 0, 0.918));
+}
+
+.hero-content{
+position:relative;
+z-index:2;
+}
+
+.logo{
+width:390px;
+margin-bottom:30px;
+filter:drop-shadow(0 0 47px rgba(56, 228, 93, 0.747));
+transition: transform 0.6s ease;
+}
+
+h1{
+font-family:'Great Vibes',cursive;
+font-size:4.6rem;
+background:linear-gradient(#fff3c4,#c8a94c);
+-webkit-background-clip:text;
+background-clip:text;
+-webkit-text-fill-color:transparent;
+text-shadow:0 0 45px rgba(255,215,120,0.6);
+margin-bottom:25px;
+transition: transform 0.6s ease;
+}
+
+.search{
+display:flex;
+justify-content:center;
+margin-bottom:27px;
+}
+
+.search input{
+padding:14px;
+width:340px;
+border:none;
+border-radius:30px 0 0 30px;
+}
+
+.search button{
+padding:14px 20px;
+border:none;
+border-radius:0 30px 30px 0;
+background:#6a7c4b;
+color:white;
+cursor:pointer;
+}
+
+.cta a{
+padding:14px 35px;
+border-radius:40px;
+border:none;
+margin:10px;
+cursor:pointer;
+position:relative;
+overflow:hidden;
+font-weight:600;
+letter-spacing:1px;
+transition:all 0.4s ease;
+box-shadow:0 0 15px rgba(0,0,0,0.3);
+display: inline-block;
+text-decoration: none;
+}
+
+/* brillo deslizante */
+.cta a::before{
+content:"";
+position:absolute;
+top:0;
+left:-100%;
+width:100%;
+height:100%;
+background:linear-gradient(120deg,transparent,rgba(255,255,255,0.4),transparent);
+transition:0.6s;
+}
+
+.cta a:hover::before{
+left:100%;
+}
+
+.cta a:hover{
+transform:translateY(-6px) scale(1.05);
+box-shadow:0 15px 35px rgba(0,0,0,0.6);
+}
+
+.primary{background:#5a7f49;color:white}
+.secondary{background:#9b6a4c;color:white}
+
+.products{
+padding:80px 40px;
+background:rgba(0,0,0,0.7);
+}
+
+.products h2{
+text-align:center;
+font-size:2.5rem;
+margin-bottom:40px;
+}
+
+.product-grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+gap:30px;
+}
+
+.card{
+background:rgba(30,60,30,0.85);
+padding:25px;
+border-radius:25px;
+text-align:center;
+transition:all 0.5s ease;
+position:relative;
+overflow:hidden;
+cursor:pointer;
+}
+
+.card:hover{
+transform:translateY(-12px) scale(1.03);
+box-shadow:0 25px 60px rgba(0,0,0,0.6);
+}
+
+/* brillo interno sutil */
+.card::after{
+content:"";
+position:absolute;
+top:-100%;
+left:0;
+width:100%;
+height:100%;
+background:linear-gradient(180deg,rgba(255,255,255,0.1),transparent);
+transition:0.6s;
+}
+
+.card:hover::after{
+top:100%;
+}
+
+.card img{
+width:100%;
+border-radius:15px;
+margin-bottom:15px;
+}
+
+.card button{
+margin-top:15px;
+padding:12px 28px;
+border:none;
+border-radius:30px;
+background:linear-gradient(45deg,#4c7a3c,#6fbf5f);
+color:white;
+cursor:pointer;
+transition:all 0.3s ease;
+font-weight:600;
+letter-spacing:0.5px;
+}
+
+.card button:hover{
+transform:scale(1.1);
+box-shadow:0 0 25px rgba(140,255,120,0.8);
+}
+
+.card.active{
+border:2px solid #8bd66f;
+box-shadow:0 0 30px rgba(140,255,120,0.8);
+}
+
+.whatsapp-btn{
+position:fixed;
+bottom:25px;
+right:25px;
+width:65px;
+height:65px;
+background:#25D366;
+color:white;
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:28px;
+text-decoration:none;
+box-shadow:0 10px 25px rgba(0,0,0,0.4);
+z-index:9999;
+transition:all 0.3s ease;
+}
+
+.whatsapp-btn:hover{
+transform:scale(1.1);
+}
+
+/* BOTON PRIVACIDAD */
+
+.privacy-button{
+position: fixed;
+top: 15px;
+right: 15px;
+background: #111;
+color: white;
+padding: 10px 16px;
+border-radius: 20px;
+font-size: 14px;
+text-decoration: none;
+z-index: 999;
+transition: 0.3s;
+}
+
+.privacy-button:hover{
+background: #444;
+}
+
+
+/* PAGINA POLITICAS */
+
+.policy-body{
+font-family: Arial, sans-serif;
+background: url('../images/Branding/background.jpg') no-repeat center center fixed;
+background-size: cover;
+}
+
+.policy-container{
+max-width: 800px;
+margin: 80px auto;
+padding: 40px;
+background: rgba(0,0,0,0.8);
+border-radius: 10px;
+box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+color: #f5f2e7;
+}
+
+.policy-container h1{
+margin-bottom: 10px;
+margin-top: -1cm;
+}
+
+.policy-container h2{
+margin-top: 30px;
+}
+
+.policy-container ul{
+margin-left: 20px;
+}
+
+.update{
+color: gray;
+font-size: 14px;
+}
+
+.brand{
+margin-top: 40px;
+font-weight: bold;
+}
+
+/* ESTILOS PARA LOGIN */
+
+.container{
+width:100%;
+display:flex;
+justify-content:center;
+align-items:center;
+min-height:100vh;
+}
+
+.login-box{
+background:rgba(0,0,0,0.8);
+padding:50px;
+border-radius:15px;
+width:350px;
+backdrop-filter:blur(15px);
+box-shadow:0 0 30px rgba(90,127,73,0.5);
+text-align:center;
+margin: 0 auto;
+animation: slideIn 1s ease 0.5s both;
+}
+
+@keyframes slideIn {
+    0% {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.logo{
+margin-bottom:30px;
+font-size:26px;
+letter-spacing:2px;
+color:#f5f2e7;
+font-family:'Great Vibes',cursive;
+}
+
+.input-group{
+position:relative;
+margin-bottom:30px;
+}
+
+.input-group input{
+width:100%;
+padding:10px;
+background:transparent;
+border:none;
+border-bottom:2px solid #555;
+outline:none;
+color:#f5f2e7;
+font-size:16px;
+font-family:'Playfair Display',serif;
+}
+
+.input-group label{
+position:absolute;
+left:0;
+top:10px;
+color:#aaa;
+pointer-events:none;
+transition:0.3s;
+}
+
+.input-group input:focus + label,
+.input-group input:valid + label{
+top:-15px;
+font-size:12px;
+color:#8bd66f;
+}
+
+.login-box button{
+width:100%;
+padding:12px;
+border:none;
+border-radius:8px;
+background:linear-gradient(45deg,#5a7f49,#9b6a4c);
+color:#f5f2e7;
+font-weight:bold;
+cursor:pointer;
+transition:0.3s;
+font-family:'Playfair Display',serif;
+}
+
+.login-box button:hover{
+transform:scale(1.05);
+box-shadow:0 0 20px rgba(139,214,111,0.5);
+}
+
+.alihada-info {
+    max-width: 1000px;
+    margin: 20px auto;
+    padding: 20px;
+    background: rgba(0,0,0,0.7);
+    border-radius: 15px;
+    text-align: center;
+    color: #f5f2e7;
+    font-family: 'Playfair Display', serif;
+    animation: fadeInUp 1s ease 1s both;
+}
+
+@keyframes fadeInUp {
+    0% {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.alihada-info h2 {
+    font-family: 'Great Vibes', cursive;
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    color: #f5f2e7;
+}
+
+.alihada-info p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
+
+.login-box .logo{
+width: 250px;
+margin-bottom: 30px;
+}
+
+h1 {
+    font-family: 'Great Vibes', cursive;
+    font-size: 4rem;
+    background-color: rgba(0, 50, 0, 0.8);
+    background-image: linear-gradient(#fff3c4, #c8a94c);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 45px rgba(255, 215, 120, 0.6);
+    text-align: center;
+    padding: 15px 30px;
+    border-radius: 15px;
+    display: block;
+    margin: 2.5cm auto 20px;
+    width: fit-content;
+    animation: titleFadeIn 1.5s ease;
+}
+
+@keyframes titleFadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.9);
+    }
+    50% {
+        opacity: 0.7;
+        transform: translateY(-10px) scale(1.05);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* NAV BAR */
+
+.navbar {
+    background-color: rgba(0,0,0,0.8);
+    overflow: hidden;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+}
+
+.navbar ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+}
+
+.navbar ul li {
+    display: inline;
+}
+
+.navbar ul li a {
+    display: block;
+    color: #f5f2e7;
+    text-align: center;
+    padding: 14px 20px;
+    text-decoration: none;
+    font-family: 'Playfair Display', serif;
+}
+
+.navbar ul li a:hover {
+    background-color: rgba(139,214,111,0.2);
+}
+
+/* CONTAINER */
+
+.container {
+    margin-top: 0.5cm;
+    text-align: center;
+}
+
+.left {
+    flex: 1;
+    padding-right: 50px;
+}
+
+.left h1 {
+    font-family: 'Great Vibes', cursive;
+    font-size: 3rem;
+    color: #f5f2e7;
+    margin-bottom: 20px;
+}
+
+.left p {
+    font-size: 1.2rem;
+    line-height: 1.6;
+    color: #f5f2e7;
+}
+
+.left ul {
+    margin-left: 20px;
+    color: #f5f2e7;
+}
+
+.right {
+    flex: 1;
+    text-align: center;
+}
+
+.image-placeholder {
+    width: 100%;
+    height: 300px;
+    background-color: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #f5f2e7;
+}
