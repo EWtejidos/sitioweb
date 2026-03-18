@@ -1,95 +1,54 @@
-/* Estilos generales para el cuerpo del documento */
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
+.page-frame-single {
+  grid-template-columns: minmax(0, 1fr);
 }
 
-/* Estilos para la barra de navegación */
-.navbar {
-    background-color: #333;
-    overflow: hidden;
-    position: fixed;
-    top: 0;
-    width: 100%;
-    z-index: 1000;
+.about-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) 220px;
+  gap: 1.5rem;
+  align-items: center;
+  padding: 2rem;
 }
 
-.navbar ul {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    justify-content: center;
+.about-hero-logo {
+  width: 100%;
+  max-width: 220px;
+  justify-self: end;
+  filter: drop-shadow(0 18px 32px rgba(20, 76, 54, 0.2));
 }
 
-.navbar ul li {
-    display: inline;
+.about-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
 }
 
-.navbar ul li a {
-    display: block;
-    color: white;
-    text-align: center;
-    padding: 14px 20px;
-    text-decoration: none;
+.about-card {
+  display: grid;
+  gap: 0.75rem;
 }
 
-.navbar ul li a:hover {
-    background-color: #111;
+.about-card h2 {
+  margin: 0;
+  color: var(--text-strong);
 }
 
-/* Estilos para el contenedor principal */
-.container {
-    display: flex;
-    justify-content: space-between;
-    padding: 100px 50px; /* Añade espacio alrededor del contenido */
-    margin-top: 60px; /* Añade un margen superior para evitar la superposición con la barra de navegación */
+.about-card p {
+  margin: 0;
+  color: var(--text-main);
+  line-height: 1.65;
 }
 
-/* Estilos para la sección izquierda */
-.left {
-    flex: 1;
-    margin-right: 20px; /* Añade un espacio a la derecha */
-}
+@media (max-width: 920px) {
+  .about-hero {
+    grid-template-columns: 1fr;
+  }
 
-.left h1 {
-    font-size: 2.5em;
-    margin-bottom: 20px;
-}
+  .about-hero-logo {
+    justify-self: start;
+  }
 
-.left p {
-    font-size: 1.2em;
-    line-height: 1.6;
+  .about-grid {
+    grid-template-columns: 1fr;
+  }
 }
-
-/* Estilos para la sección derecha */
-.right {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.image-placeholder {
-    width: 80%;
-    height: 400px;
-    background-color: #eaeaea;
-    border: 2px dashed #ccc;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.image-placeholder::before {
-    content: "Espacio para una imagen";
-    color: #aaa;
-    font-size: 1.2em;
-}
-
-/* Estilos generales para el cuerpo del documento */
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-}
-
-/* Estilos para la barra

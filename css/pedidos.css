@@ -1,0 +1,131 @@
+.orders-hero {
+  margin-bottom: 1.5rem;
+}
+
+.orders-header {
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.tab {
+  border: 1px solid rgba(20, 76, 54, 0.14);
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--text-strong);
+  padding: 0.8rem 1rem;
+  border-radius: 999px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 180ms ease, background 180ms ease, color 180ms ease;
+}
+
+.tab:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.tab.active {
+  background: linear-gradient(135deg, var(--brand), var(--brand-dark));
+  color: white;
+}
+
+.orders-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.order-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.58);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow: var(--shadow-soft);
+}
+
+.order-main {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.order-image {
+  width: 88px;
+  height: 88px;
+  object-fit: cover;
+  border-radius: 18px;
+  flex-shrink: 0;
+  background: rgba(112, 168, 139, 0.2);
+}
+
+.order-copy {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.order-title {
+  margin: 0;
+  color: var(--text-strong);
+}
+
+.order-meta,
+.order-description {
+  color: var(--text-muted);
+  font-size: 0.94rem;
+}
+
+.order-side {
+  display: grid;
+  justify-items: end;
+  gap: 0.75rem;
+}
+
+.status-badge {
+  padding: 0.5rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-transform: capitalize;
+}
+
+.status-badge.disponible {
+  background: rgba(43, 122, 85, 0.14);
+  color: var(--brand-dark);
+}
+
+.status-badge.proceso {
+  background: rgba(189, 135, 0, 0.18);
+  color: #8b5e00;
+}
+
+.status-badge.terminado {
+  background: rgba(33, 113, 84, 0.18);
+  color: #176649;
+}
+
+.order-actions {
+  display: flex;
+  gap: 0.6rem;
+}
+
+@media (max-width: 780px) {
+  .order-card {
+    grid-template-columns: 1fr;
+  }
+
+  .order-main {
+    align-items: flex-start;
+  }
+
+  .order-side {
+    justify-items: start;
+  }
+}

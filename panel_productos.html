@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EW | Productos</title>
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/panel_productos.css">
+</head>
+<body data-page="productos">
+  <div class="page-shell">
+    <aside class="sidebar" data-sidebar></aside>
+
+    <main class="content-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Catalogo</p>
+          <h1>Productos</h1>
+        </div>
+        <div class="topbar-actions">
+          <span class="welcome-chip">Coleccion Etherial Whisper</span>
+          <button class="button primary" id="btnNuevoProducto" type="button">Nuevo producto</button>
+        </div>
+      </header>
+
+      <section class="hero-panel products-hero">
+        <div>
+          <p class="hero-kicker">Inventario visual</p>
+          <h2>Organiza y presenta tu catalogo con claridad</h2>
+          <p class="hero-copy">
+            Cada producto mantiene una imagen consistente, acciones directas y una superficie
+            lista para evolucionar hacia edicion real y sincronizacion con backend.
+          </p>
+        </div>
+      </section>
+
+      <section class="panel products-panel">
+        <div class="panel-header">
+          <div>
+            <p class="panel-kicker">Vista general</p>
+            <h3>Mis productos</h3>
+          </div>
+          <span class="section-badge">Actualizado hoy</span>
+        </div>
+        <div id="listaProductos" class="product-grid"></div>
+      </section>
+    </main>
+  </div>
+
+  <button class="floating-action" id="fab" type="button" aria-label="Agregar producto">+</button>
+
+  <script src="js/shared-layout.js"></script>
+  <script src="js/panel_productos.js"></script>
+</body>
+</html>

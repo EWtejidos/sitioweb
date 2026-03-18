@@ -1,30 +1,76 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sobre Nosotros - Ethereal Whispers</title>
-    <link rel="stylesheet" href="../css/sobre-nosotros.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Etherial Whisper | Sobre nosotros</title>
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/sobre-nosotros.css">
 </head>
 <body>
-    <nav class="navbar">
-        <ul>
-            <li><a href="index.html">Inicio</a></li>
-            <li><a href="sobre-nosotros.html">Sobre Nosotros</a></li>
-            <li><a href="index.html#productos">Productos</a></li>
-            <li><a href="index.html#contactanos">Contáctanos</a></li>
-        </ul>
-    </nav>
-    <div class="container">
-        <div class="left">
-            <h1>Sobre Nosotros</h1>
-            <p>Somos un emprendimiento de tejidos a crochet hechos a mano. Buscamos crecer junto con otros tejedores. <br><br> "Ethereal Whispers" significa susurros etéreos, representando la delicadeza y belleza de nuestros productos artesanales.</p>
+  <div class="public-page">
+    <header class="site-header glass-surface">
+      <a class="site-brand" href="index.html">
+        <img class="site-brand-logo" src="images/Branding/logo.png" alt="Logo Etherial Whisper">
+        <div>
+          <span class="site-brand-title">Etherial Whisper</span>
+          <span class="site-brand-subtitle">Historia y proposito</span>
         </div>
-        <div class="right">
-            <div class="image-placeholder">
-                <!-- Espacio para una imagen -->
-            </div>
+      </a>
+
+      <nav class="site-nav" aria-label="Navegacion principal">
+        <a href="index.html">Inicio</a>
+        <a href="index.html#productos">Productos</a>
+        <a href="politicas.html">Politicas</a>
+        <span class="cart-chip">Carrito <strong data-cart-count>0</strong></span>
+      </nav>
+    </header>
+
+    <main class="page-frame page-frame-single">
+      <section class="about-hero glass-surface">
+        <div class="about-hero-copy">
+          <p class="section-eyebrow">Marca</p>
+          <h1 class="section-title">Tejemos piezas con identidad, cuidado y proyeccion real.</h1>
+          <p class="hero-text">
+            Etherial Whisper nace para conectar la delicadeza del crochet artesanal con una experiencia
+            digital clara, elegante y preparada para crecer.
+          </p>
         </div>
-    </div>
+        <img class="about-hero-logo" src="images/Branding/logo.png" alt="Logo Etherial Whisper">
+      </section>
+
+      <section class="about-grid">
+        <article class="about-card glass-panel">
+          <p class="section-eyebrow">Nuestra esencia</p>
+          <h2>Artesania con narrativa de marca</h2>
+          <p>
+            Creamos productos tejidos a mano que combinan detalle, personalidad y una presentacion
+            profesional capaz de convivir con catalogos, pedidos y futuras integraciones.
+          </p>
+        </article>
+
+        <article class="about-card glass-panel">
+          <p class="section-eyebrow">Como trabajamos</p>
+          <h2>Proceso claro y escalable</h2>
+          <p>
+            Desde la inspiracion visual hasta la entrega, buscamos un sistema simple de entender,
+            consistente en todas las pantallas y preparado para evolucionar hacia flujos reales de compra.
+          </p>
+        </article>
+
+        <article class="about-card glass-panel">
+          <p class="section-eyebrow">Vision</p>
+          <h2>Crecer junto a nuevos tejedores</h2>
+          <p>
+            Queremos construir una plataforma donde la calidad artesanal y la organizacion digital se
+            encuentren para impulsar colecciones, pedidos personalizados y colaboraciones.
+          </p>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <script src="js/cart.js"></script>
+  <script src="js/sobre-nosotros.js"></script>
 </body>
 </html>

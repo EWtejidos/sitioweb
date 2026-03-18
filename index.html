@@ -1,76 +1,166 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Ethereal Whispers</title>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Great+Vibes&family=Playfair+Display:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../css/index.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ethereal Whispers</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Great+Vibes&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/index.css">
 </head>
-<script src="../js/index.js"></script>
-<script src="../js/animations.js"></script>
 <body>
-<a href="Politicas_privacy.html" class="privacy-button">
-Política
-</a>
-<header class="hero">
-<div class="overlay"></div>
-<div class="hero-content">
-<img src="../images/Branding/logo.png" class="logo">
-<h1>Ethereal Whispers</h1>
+  <a href="politicas.html" class="privacy-button">Politica</a>
 
-<div class="search">
-<input type="text" placeholder="Buscar...">
-<button>🔍</button>
-</div>
+  <header class="hero">
+    <div class="overlay"></div>
 
-<p>Descubre la magia del crochet y los productos artesanales encantados</p>
+    <div class="hero-content">
+      <img src="images/Branding/logo.png" class="logo" alt="Logo Ethereal Whispers">
+      <h1>Ethereal Whispers</h1>
 
-<div class="cta">
-<a href="#productos" class="primary">Producto disponible</a>
-<a href="sobre-nosotros.html" class="secondary">Sobre nosotros</a>
-</div>
-</div>
-</header>
+      <div class="search-block">
+        <div class="search">
+          <input
+            id="productSearch"
+            type="text"
+            placeholder="Buscar producto artesanal..."
+            autocomplete="off"
+            aria-label="Buscar productos"
+          >
+          <button id="searchButton" type="button" aria-label="Buscar producto">🔍</button>
+        </div>
+        <div class="search-results" id="searchResults" hidden></div>
+      </div>
 
-<section class="products" id="productos">
-<h2>Nuestros Productos</h2>
+      <p>Descubre la magia del crochet y los productos artesanales encantados.</p>
 
-<div class="product-grid">
-<div class="card">
-<img src="../images/products/bikini.jpg">
-<h3>Bikini de Crochet</h3>
-<p>$380 MXN</p>
-<button>Añadir al carrito</button>
-</div>
+      <div class="cta">
+        <a href="#productos" class="primary">Ver productos</a>
+        <button class="secondary" id="viewCartButton" type="button">
+          Ver carrito
+          <span class="cart-badge" data-cart-count>0</span>
+        </button>
+      </div>
 
-<div class="card">
-<img src="../images/products/top.jpg">
-<h3>Top de Crochet</h3>
-<p>$240 MXN</p>
-<button>Añadir al carrito</button>
-</div>
+      <div class="cart-preview">
+        <span>Carrito activo</span>
+        <strong data-cart-count>0</strong>
+        <small id="heroCartTotal">$0</small>
+      </div>
+    </div>
+  </header>
 
-<div class="card">
-<img src="../images/products/flor.jpg">
-<h3>Flor de Crochet</h3>
-<p>$160 MXN</p>
-<button>Añadir al carrito</button>
-</div>
+  <section class="products" id="productos">
+    <div class="section-header">
+      <div>
+        <h2>Nuestros Productos</h2>
+        <p>Piezas tejidas a mano con una presencia visual mistica y artesanal.</p>
+      </div>
+      <a href="sobre-nosotros.html" class="section-link">Conocer la marca</a>
+    </div>
 
-<div class="card">
-<img src="../images/products/tortuga.jpg">
-<h3>Amigurumi Tortuga</h3>
-<p>$180 MXN</p>
-<button>Añadir al carrito</button>
-</div>
-</div>
-</section>
-<!-- BOTÓN WHATSAPP AQUÍ -->
-  <a href="https://wa.me/573107298010" 
-     class="whatsapp-btn" 
-     target="_blank">
-     💬
+    <div class="product-grid">
+      <article class="card" id="producto-bikini" data-product-name="Bikini de Crochet">
+        <img src="images/products/bikini.jpg" alt="Bikini de Crochet">
+        <h3>Bikini de Crochet</h3>
+        <p>$380.000 COP</p>
+        <button
+          class="add-to-cart"
+          type="button"
+          data-product-id="bikini-crochet"
+          data-product-name="Bikini de Crochet"
+          data-product-price="380000"
+          data-product-image="images/products/bikini.jpg"
+        >
+          Anadir al carrito
+        </button>
+      </article>
+
+      <article class="card" id="producto-top" data-product-name="Top de Crochet">
+        <img src="images/products/top.jpg" alt="Top de Crochet">
+        <h3>Top de Crochet</h3>
+        <p>$240.000 COP</p>
+        <button
+          class="add-to-cart"
+          type="button"
+          data-product-id="top-crochet"
+          data-product-name="Top de Crochet"
+          data-product-price="240000"
+          data-product-image="images/products/top.jpg"
+        >
+          Anadir al carrito
+        </button>
+      </article>
+
+      <article class="card" id="producto-flor" data-product-name="Flor de Crochet">
+        <img src="images/products/flor.jpg" alt="Flor de Crochet">
+        <h3>Flor de Crochet</h3>
+        <p>$160.000 COP</p>
+        <button
+          class="add-to-cart"
+          type="button"
+          data-product-id="flor-crochet"
+          data-product-name="Flor de Crochet"
+          data-product-price="160000"
+          data-product-image="images/products/flor.jpg"
+        >
+          Anadir al carrito
+        </button>
+      </article>
+
+      <article class="card" id="producto-tortuga" data-product-name="Amigurumi Tortuga">
+        <img src="images/products/tortuga.jpg" alt="Amigurumi Tortuga">
+        <h3>Amigurumi Tortuga</h3>
+        <p>$180.000 COP</p>
+        <button
+          class="add-to-cart"
+          type="button"
+          data-product-id="amigurumi-tortuga"
+          data-product-name="Amigurumi Tortuga"
+          data-product-price="180000"
+          data-product-image="images/products/tortuga.jpg"
+        >
+          Anadir al carrito
+        </button>
+      </article>
+    </div>
+  </section>
+
+  <section class="cart-section" id="carrito">
+    <div class="cart-container">
+      <div class="cart-heading">
+        <div>
+          <h2>Tu Carrito</h2>
+          <p>Los productos se guardan automaticamente en tu navegador.</p>
+        </div>
+        <button class="cart-clear" id="clearCart" type="button">Vaciar carrito</button>
+      </div>
+
+      <div class="cart-empty" id="cartEmpty">Tu carrito esta vacio. Elige una pieza para comenzar.</div>
+      <div class="cart-items" id="cartItems"></div>
+
+      <div class="cart-summary">
+        <div>
+          <span>Total estimado</span>
+          <strong id="cartTotal">$0</strong>
+        </div>
+        <button class="cart-buy" id="buyButton" type="button">Comprar</button>
+      </div>
+    </div>
+  </section>
+
+  <a
+    href="https://wa.me/573001234567"
+    class="whatsapp-btn"
+    target="_blank"
+    rel="noopener noreferrer"
+    aria-label="Contactar por WhatsApp"
+  >
+    💬
   </a>
 
+  <script src="js/cart.js"></script>
+  <script src="js/index.js"></script>
 </body>
 </html>
