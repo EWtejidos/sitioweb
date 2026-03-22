@@ -1,0 +1,12 @@
+[
+  {
+    "name": "Marca",
+    "settings": [
+      {
+        "type": "image_picker",
+        "id": "brand_logo",
+        "label": "Logo principal"
+      }
+    ]
+  }
+]

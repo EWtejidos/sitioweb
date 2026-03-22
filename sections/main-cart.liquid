@@ -1,0 +1,11 @@
+<div class="public-page cart-page">
+  {% render 'page-header' %}
+  {% render 'cart-drawer', heading: 'Tu Carrito', description: 'Tus productos se sincronizan con el carrito real de Shopify.', empty_text: 'Tu carrito esta vacio. Elige una pieza para comenzar.', clear_label: 'Vaciar carrito', total_label: 'Total estimado', checkout_label: 'Comprar' %}
+</div>
+
+{% schema %}
+{
+  "name": "Main cart",
+  "settings": []
+}
+{% endschema %}

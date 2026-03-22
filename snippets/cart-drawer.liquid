@@ -1,0 +1,38 @@
+<section class="cart-section" id="carrito">
+  <div class="cart-container">
+    <div class="cart-heading">
+      <div>
+        <h2>{{ heading }}</h2>
+        <p>{{ description }}</p>
+      </div>
+      <button class="cart-clear" id="clearCart" type="button">{{ clear_label }}</button>
+    </div>
+
+    <div class="cart-empty" id="cartEmpty" {% if cart.item_count > 0 %}hidden{% endif %}>{{ empty_text }}</div>
+    <div class="cart-items" id="cartItems">
+      {% for item in cart.items %}
+        <article class="cart-item">
+          {% if item.image %}
+            {{ item.image | image_url: width: 160 | image_tag: alt: item.product.title }}
+          {% else %}
+            <img src="{{ 'product-bikini.jpg' | asset_url }}" alt="{{ item.product.title }}">
+          {% endif %}
+          <div class="cart-item-copy">
+            <span class="cart-item-title">{{ item.product.title }}</span>
+            <span class="cart-item-meta">Cantidad: {{ item.quantity }}</span>
+          </div>
+          <span class="cart-item-price">{{ item.final_line_price | money }}</span>
+          <button class="cart-item-remove" type="button" data-line="{{ forloop.index }}">Quitar</button>
+        </article>
+      {% endfor %}
+    </div>
+
+    <div class="cart-summary">
+      <div>
+        <span>{{ total_label }}</span>
+        <strong id="cartTotal">{{ cart.total_price | money }}</strong>
+      </div>
+      <button class="cart-buy" id="buyButton" type="button">{{ checkout_label }}</button>
+    </div>
+  </div>
+</section>

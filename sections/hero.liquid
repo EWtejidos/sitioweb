@@ -1,0 +1,47 @@
+<header class="hero">
+  <div class="overlay"></div>
+  <div class="hero-content">
+    {% if settings.brand_logo != blank %}
+      {{ settings.brand_logo | image_url: width: 780 | image_tag: class: 'logo', alt: shop.name }}
+    {% else %}
+      <img src="{{ 'ew-logo.png' | asset_url }}" class="logo" alt="{{ shop.name }}">
+    {% endif %}
+    <h1>{{ section.settings.title }}</h1>
+    <div class="search-block">
+      <form class="search" action="{{ routes.search_url }}" method="get" role="search">
+        <input id="productSearch" type="text" name="q" value="{{ search.terms | escape }}" placeholder="{{ section.settings.search_placeholder }}" autocomplete="off" aria-label="Buscar productos">
+        <input type="hidden" name="type" value="product">
+        <button id="searchButton" type="submit" aria-label="Buscar producto">&#128269;</button>
+      </form>
+      <div class="search-results" id="searchResults" hidden></div>
+    </div>
+    <p>{{ section.settings.description }}</p>
+    <div class="cta">
+      <a href="#productos" class="primary">{{ section.settings.primary_label }}</a>
+      <button class="secondary" id="viewCartButton" type="button">
+        {{ section.settings.secondary_label }}
+        <span class="cart-badge" data-cart-count>{{ cart.item_count }}</span>
+      </button>
+    </div>
+    <div class="cart-preview">
+      <span>{{ section.settings.preview_label }}</span>
+      <strong data-cart-count>{{ cart.item_count }}</strong>
+      <small id="heroCartTotal">{{ cart.total_price | money }}</small>
+    </div>
+  </div>
+</header>
+
+{% schema %}
+{
+  "name": "Hero",
+  "settings": [
+    { "type": "text", "id": "title", "label": "Titulo", "default": "Ethereal Whispers" },
+    { "type": "textarea", "id": "description", "label": "Descripcion", "default": "Descubre la magia del crochet y los productos artesanales encantados." },
+    { "type": "text", "id": "search_placeholder", "label": "Placeholder buscador", "default": "Buscar producto artesanal..." },
+    { "type": "text", "id": "primary_label", "label": "Texto boton principal", "default": "Ver productos" },
+    { "type": "text", "id": "secondary_label", "label": "Texto boton carrito", "default": "Ver carrito" },
+    { "type": "text", "id": "preview_label", "label": "Etiqueta preview carrito", "default": "Carrito activo" }
+  ],
+  "presets": [{ "name": "Hero" }]
+}
+{% endschema %}

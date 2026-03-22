@@ -1,0 +1,29 @@
+{% render 'cart-drawer', heading: section.settings.cart_heading, description: section.settings.cart_description, empty_text: section.settings.empty_text, clear_label: section.settings.clear_label, total_label: section.settings.total_label, checkout_label: section.settings.checkout_label %}
+
+<footer class="site-footer storefront-footer">
+  <span>{{ section.settings.footer_copy }}</span>
+  {% if section.settings.footer_link != blank %}
+    <a href="{{ section.settings.footer_link.url }}">{{ section.settings.footer_link_label }}</a>
+  {% endif %}
+</footer>
+
+<a href="{{ section.settings.whatsapp_url }}" class="whatsapp-btn" target="_blank" rel="noopener noreferrer" aria-label="Contactar por WhatsApp">&#128241;</a>
+
+{% schema %}
+{
+  "name": "Footer",
+  "settings": [
+    { "type": "text", "id": "cart_heading", "label": "Titulo carrito", "default": "Tu Carrito" },
+    { "type": "textarea", "id": "cart_description", "label": "Descripcion carrito", "default": "Tus productos se sincronizan con el carrito real de Shopify." },
+    { "type": "text", "id": "empty_text", "label": "Texto vacio", "default": "Tu carrito esta vacio. Elige una pieza para comenzar." },
+    { "type": "text", "id": "clear_label", "label": "Texto vaciar", "default": "Vaciar carrito" },
+    { "type": "text", "id": "total_label", "label": "Etiqueta total", "default": "Total estimado" },
+    { "type": "text", "id": "checkout_label", "label": "Texto checkout", "default": "Comprar" },
+    { "type": "text", "id": "footer_copy", "label": "Texto footer", "default": "Ethereal Whispers" },
+    { "type": "page", "id": "footer_link", "label": "Enlace footer" },
+    { "type": "text", "id": "footer_link_label", "label": "Texto enlace footer", "default": "Ver pagina" },
+    { "type": "url", "id": "whatsapp_url", "label": "URL WhatsApp", "default": "https://wa.me/573107298010?text=Hola%20Ethereal%20Whispers%2C%20estoy%20interesado%20en%20sus%20productos.%20Quisiera%20saber%20m%C3%A1s%20sobre%20ellos." }
+  ],
+  "presets": [{ "name": "Footer" }]
+}
+{% endschema %}

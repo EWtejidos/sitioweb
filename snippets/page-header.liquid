@@ -1,0 +1,23 @@
+<header class="site-header glass-surface">
+  <a class="site-brand" href="{{ routes.root_url }}">
+    {% if settings.brand_logo != blank %}
+      {{ settings.brand_logo | image_url: width: 116 | image_tag: class: 'site-brand-logo', alt: shop.name }}
+    {% else %}
+      <img class="site-brand-logo" src="{{ 'ew-logo.png' | asset_url }}" alt="{{ shop.name }}">
+    {% endif %}
+    <div>
+      <span class="site-brand-title">{{ shop.name }}</span>
+      <span class="site-brand-subtitle">Historia y proposito</span>
+    </div>
+  </a>
+
+  <nav class="site-nav" aria-label="Navegacion principal">
+    <a href="{{ routes.root_url }}">Inicio</a>
+    <a href="{{ routes.root_url }}#productos">Productos</a>
+    <a href="/search?type=product">Buscar</a>
+    <button class="cart-toggle" type="button" id="siteCartToggle">
+      Carrito
+      <span class="cart-counter" data-cart-count>{{ cart.item_count }}</span>
+    </button>
+  </nav>
+</header>

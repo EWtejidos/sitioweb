@@ -1,0 +1,42 @@
+<div class="public-page search-page">
+  {% render 'page-header' %}
+  <main class="glass-surface collection-shell">
+    <div class="section-header collection-header">
+      <div>
+        <p class="section-eyebrow">Busqueda</p>
+        <h1 class="section-title">
+          {% if search.performed %}
+            Resultados para "{{ search.terms | escape }}"
+          {% else %}
+            Buscar productos
+          {% endif %}
+        </h1>
+      </div>
+    </div>
+
+    <form class="search storefront-search-form" action="{{ routes.search_url }}" method="get" role="search">
+      <input type="text" name="q" value="{{ search.terms | escape }}" placeholder="Buscar producto artesanal..." aria-label="Buscar productos">
+      <input type="hidden" name="type" value="product">
+      <button type="submit" aria-label="Buscar producto">&#128269;</button>
+    </form>
+
+    <div class="product-grid search-results-grid">
+      {% for item in search.results %}
+        {% if item.object_type == 'product' %}
+          {% render 'product-card', product: item %}
+        {% endif %}
+      {% else %}
+        {% if search.performed %}
+          <p class="collection-empty">No encontramos productos con ese nombre.</p>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </main>
+</div>
+
+{% schema %}
+{
+  "name": "Main search",
+  "settings": []
+}
+{% endschema %}

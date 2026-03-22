@@ -1,0 +1,28 @@
+<div class="public-page collection-page">
+  {% render 'page-header' %}
+  <main class="glass-surface collection-shell">
+    <div class="section-header collection-header">
+      <div>
+        <p class="section-eyebrow">Coleccion</p>
+        <h1 class="section-title">{{ collection.title }}</h1>
+        {% if collection.description != blank %}
+          <div class="hero-text rte">{{ collection.description }}</div>
+        {% endif %}
+      </div>
+    </div>
+    <div class="product-grid">
+      {% for product in collection.products %}
+        {% render 'product-card', product: product %}
+      {% else %}
+        <p class="collection-empty">No hay productos en esta coleccion todavia.</p>
+      {% endfor %}
+    </div>
+  </main>
+</div>
+
+{% schema %}
+{
+  "name": "Main collection",
+  "settings": []
+}
+{% endschema %}

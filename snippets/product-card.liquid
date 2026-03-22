@@ -1,0 +1,17 @@
+{% assign featured_media = product.featured_image %}
+<article class="card" id="producto-{{ product.handle }}" data-product-name="{{ product.title | escape }}">
+  {% if featured_media %}
+    {{ featured_media | image_url: width: 800 | image_tag: alt: product.title, loading: 'lazy' }}
+  {% else %}
+    <img src="{{ 'product-bikini.jpg' | asset_url }}" alt="{{ product.title }}">
+  {% endif %}
+  <h3>{{ product.title }}</h3>
+  <p>{{ product.price | money }}</p>
+  <form method="post" action="{{ routes.cart_add_url }}" data-product-form>
+    <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
+    <input type="hidden" name="quantity" value="1">
+    <button class="add-to-cart" type="submit" {% unless product.available %}disabled{% endunless %}>
+      {% if product.available %}Anadir al carrito{% else %}Agotado{% endif %}
+    </button>
+  </form>
+</article>

@@ -1,0 +1,48 @@
+{% if request.page_type == 'index' %}
+  {% assign policies_page = section.settings.policies_page %}
+  <a href="{{ policies_page.url | default: routes.root_url }}" class="privacy-button">{{ section.settings.button_label }}</a>
+{% else %}
+  <div class="public-page public-page-header-only">
+    <header class="site-header glass-surface">
+      <a class="site-brand" href="{{ routes.root_url }}">
+        {% if settings.brand_logo != blank %}
+          {{ settings.brand_logo | image_url: width: 116 | image_tag: class: 'site-brand-logo', alt: shop.name }}
+        {% else %}
+          <img class="site-brand-logo" src="{{ 'ew-logo.png' | asset_url }}" alt="{{ shop.name }}">
+        {% endif %}
+        <div>
+          <span class="site-brand-title">{{ section.settings.brand_title }}</span>
+          <span class="site-brand-subtitle">{{ section.settings.brand_subtitle }}</span>
+        </div>
+      </a>
+
+      <nav class="site-nav" aria-label="Navegacion principal">
+        <a href="{{ routes.root_url }}">Inicio</a>
+        <a href="{{ routes.root_url }}#productos">Productos</a>
+        {% if section.settings.about_page != blank %}
+          <a href="{{ section.settings.about_page.url }}">Sobre nosotros</a>
+        {% endif %}
+        {% if section.settings.policies_page != blank %}
+          <a href="{{ section.settings.policies_page.url }}">Politicas</a>
+        {% endif %}
+        <button class="cart-toggle" type="button" id="siteCartToggle">
+          Carrito
+          <span class="cart-counter" data-cart-count>{{ cart.item_count }}</span>
+        </button>
+      </nav>
+    </header>
+  </div>
+{% endif %}
+
+{% schema %}
+{
+  "name": "Header",
+  "settings": [
+    { "type": "text", "id": "button_label", "label": "Texto boton politicas", "default": "Politica" },
+    { "type": "page", "id": "about_page", "label": "Pagina sobre nosotros" },
+    { "type": "page", "id": "policies_page", "label": "Pagina politicas" },
+    { "type": "text", "id": "brand_title", "label": "Titulo de marca", "default": "Ethereal Whispers" },
+    { "type": "text", "id": "brand_subtitle", "label": "Subtitulo de marca", "default": "Historia y proposito" }
+  ]
+}
+{% endschema %}

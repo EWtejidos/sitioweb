@@ -1,0 +1,45 @@
+{
+  "sections": {
+    "header": {
+      "type": "header",
+      "settings": {
+        "button_label": "Politica"
+      }
+    },
+    "hero": {
+      "type": "hero",
+      "settings": {
+        "title": "Ethereal Whispers",
+        "description": "Descubre la magia del crochet y los productos artesanales encantados.",
+        "search_placeholder": "Buscar producto artesanal...",
+        "primary_label": "Ver productos",
+        "secondary_label": "Ver carrito",
+        "preview_label": "Carrito activo"
+      }
+    },
+    "product_grid": {
+      "type": "product-grid",
+      "settings": {
+        "products_to_show": 4,
+        "heading": "Nuestros Productos",
+        "subheading": "Piezas tejidas a mano con una presencia visual mistica y artesanal.",
+        "link_label": "Conocer la marca"
+      }
+    },
+    "footer": {
+      "type": "footer",
+      "settings": {
+        "cart_heading": "Tu Carrito",
+        "cart_description": "Tus productos se sincronizan con el carrito real de Shopify.",
+        "empty_text": "Tu carrito esta vacio. Elige una pieza para comenzar.",
+        "clear_label": "Vaciar carrito",
+        "total_label": "Total estimado",
+        "checkout_label": "Comprar",
+        "footer_copy": "Ethereal Whispers",
+        "footer_link_label": "Ver pagina",
+        "whatsapp_url": "https://wa.me/573107298010?text=Hola%20Ethereal%20Whispers%2C%20estoy%20interesado%20en%20sus%20productos.%20Quisiera%20saber%20m%C3%A1s%20sobre%20ellos."
+      }
+    }
+  },
+  "order": ["header", "hero", "product_grid", "footer"]
+}

@@ -1,0 +1,36 @@
+<div class="public-page product-page">
+  {% render 'page-header' %}
+  <main class="product-shell glass-surface">
+    <div class="product-media">
+      {% if product.featured_image %}
+        {{ product.featured_image | image_url: width: 1200 | image_tag: class: 'product-featured-image', alt: product.title }}
+      {% else %}
+        <img class="product-featured-image" src="{{ 'product-bikini.jpg' | asset_url }}" alt="{{ product.title }}">
+      {% endif %}
+    </div>
+    <div class="product-copy">
+      {% if product.vendor != blank %}
+        <p class="section-eyebrow">{{ product.vendor }}</p>
+      {% endif %}
+      <h1 class="section-title">{{ product.title }}</h1>
+      <div class="product-price">{{ product.selected_or_first_available_variant.price | money }}</div>
+      {% if product.description != blank %}
+        <div class="hero-text rte">{{ product.description }}</div>
+      {% endif %}
+      <form method="post" action="{{ routes.cart_add_url }}" class="product-form" data-product-form>
+        <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
+        <input type="hidden" name="quantity" value="1">
+        <button class="button primary product-submit" type="submit" {% unless product.available %}disabled{% endunless %}>
+          {% if product.available %}Agregar al carrito{% else %}Agotado{% endif %}
+        </button>
+      </form>
+    </div>
+  </main>
+</div>
+
+{% schema %}
+{
+  "name": "Main product",
+  "settings": []
+}
+{% endschema %}

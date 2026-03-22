@@ -1,0 +1,56 @@
+<div class="public-page">
+  {% render 'page-header' %}
+  <main class="page-frame page-frame-single">
+    <section class="about-hero glass-surface">
+      <div class="about-hero-copy">
+        <p class="section-eyebrow">Marca</p>
+        <h1 class="section-title">Tejemos piezas con identidad, cuidado y proyeccion real.</h1>
+        <p class="hero-text">
+          Etherial Whisper nace para conectar la delicadeza del crochet artesanal con una experiencia digital clara,
+          elegante y preparada para crecer.
+        </p>
+      </div>
+      {% if settings.brand_logo != blank %}
+        {{ settings.brand_logo | image_url: width: 440 | image_tag: class: 'about-hero-logo', alt: shop.name }}
+      {% else %}
+        <img class="about-hero-logo" src="{{ 'ew-logo.png' | asset_url }}" alt="{{ shop.name }}">
+      {% endif %}
+    </section>
+
+    <section class="about-grid">
+      <article class="about-card glass-panel">
+        <p class="section-eyebrow">Nuestra esencia</p>
+        <h2>Artesania con narrativa de marca</h2>
+        <p>
+          Creamos productos tejidos a mano que combinan detalle, personalidad y una presentacion profesional capaz de
+          convivir con catalogos, pedidos y futuras integraciones.
+        </p>
+      </article>
+
+      <article class="about-card glass-panel">
+        <p class="section-eyebrow">Como trabajamos</p>
+        <h2>Proceso claro y escalable</h2>
+        <p>
+          Desde la inspiracion visual hasta la entrega, buscamos un sistema simple de entender, consistente en todas las
+          pantallas y preparado para evolucionar hacia flujos reales de compra.
+        </p>
+      </article>
+
+      <article class="about-card glass-panel">
+        <p class="section-eyebrow">Vision</p>
+        <h2>Crecer junto a nuevos tejedores</h2>
+        <p>
+          Queremos construir una plataforma donde la calidad artesanal y la organizacion digital se encuentren para
+          impulsar colecciones, pedidos personalizados y colaboraciones.
+        </p>
+      </article>
+    </section>
+  </main>
+</div>
+
+{% schema %}
+{
+  "name": "Main page about",
+  "settings": []
+}
+{% endschema %}
