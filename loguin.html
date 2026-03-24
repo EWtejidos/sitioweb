@@ -1,51 +1,45 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ethereal Whisper | Login</title>
-<link rel="stylesheet" href="../css/index.css">
+<link rel="stylesheet" href="css/login.css">
 </head>
 
 <body>
+<main class="login-page">
+    <section class="container">
+        <div class="login-box">
+            <p class="eyebrow">Portal de Aliadas</p>
+            <img src="images/Branding/logo.png" class="logo" alt="Ethereal Whispers">
+            <h1>Acceso seguro</h1>
 
-    <h1>Portal de Aliadas</h1>
+            <form id="loginForm">
+                <div class="input-group">
+                    <input type="text" id="username" name="username" required>
+                    <label for="username">Usuario</label>
+                </div>
 
-<div class="container">
+                <div class="input-group">
+                    <input type="password" id="password" name="password" required>
+                    <label for="password">Contraseña</label>
+                </div>
 
-    <div class="login-box">
+                <button type="submit">Entrar al sistema</button>
+            </form>
 
-        <img src="../images/Branding/logo.png" class="logo" alt="Ethereal Whispers">
+            <p class="footer">Secure Access Portal</p>
+        </div>
+    </section>
 
-        <form id="loginForm">
+    <section class="aliada-info">
+        <h2>¿Cómo ser una aliada?</h2>
+        <p><strong>1. Qué es:</strong> Una aliada es una colaboradora mágica en la comunidad de Ethereal Whispers, especializada en diseños etéreos y proyectos artesanales de crochet.</p>
+        <p><strong>2. Cómo unirte:</strong> Regístrate en el portal, comparte tus creaciones y conecta con otras tejedoras para formar alianzas creativas.</p>
+    </section>
+</main>
 
-            <div class="input-group">
-                <input type="text" id="username" required>
-                <label>Username</label>
-            </div>
-
-            <div class="input-group">
-                <input type="password" id="password" required>
-                <label>Password</label>
-            </div>
-
-            <button type="submit">Access System</button>
-
-        </form>
-
-        <p class="footer">Secure Access Portal</p>
-
-    </div>
-
-</div>
-
-<section class="alihada-info">
-    <h2>¿Cómo ser una aliada?</h2>
-    <p><strong>1. Qué es:</strong> Una aliada es una colaboradora mágica en la comunidad de Ethereal Whispers, especializada en diseños etéreos y proyectos artesanales de crochet.</p>
-    <p><strong>2. Cómo unirte:</strong> Regístrate en el portal, comparte tus creaciones y conecta con otras tejedoras para formar alianzas creativas.</p>
-</section>
-
-<script src="../js/animations.js"></script>
-
+<script src="js/login.js"></script>
 </body>
 </html>

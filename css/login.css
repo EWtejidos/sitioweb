@@ -2,19 +2,26 @@
 margin:0;
 padding:0;
 box-sizing:border-box;
-font-family: 'Segoe UI', sans-serif;
+font-family:'Segoe UI',sans-serif;
 }
 
 body{
-height:100vh;
-display:flex;
-justify-content:center;
-align-items:center;
-background: radial-gradient(circle at top, #1a1a2e, #000);
+min-height:100vh;
+background:
+linear-gradient(rgba(6,15,11,0.7),rgba(4,9,7,0.88)),
+url("../images/Branding/background.jpg") center/cover no-repeat fixed;
 color:white;
 }
 
-/* container */
+.login-page{
+min-height:100vh;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+gap:28px;
+padding:40px 20px;
+}
 
 .container{
 width:100%;
@@ -23,28 +30,39 @@ justify-content:center;
 align-items:center;
 }
 
-/* login card */
-
 .login-box{
-background:rgba(0,0,0,0.6);
-padding:50px;
-border-radius:15px;
-width:350px;
+background:rgba(8,16,13,0.68);
+padding:42px;
+border-radius:24px;
+width:min(100%,410px);
 backdrop-filter:blur(15px);
-box-shadow:0 0 30px rgba(0,255,255,0.2);
+border:1px solid rgba(255,255,255,0.14);
+box-shadow:0 24px 70px rgba(0,0,0,0.35);
 text-align:center;
 }
 
-/* logo */
-
-.logo{
-margin-bottom:30px;
-font-size:26px;
-letter-spacing:2px;
-color:#7fffd4;
+.eyebrow{
+margin-bottom:14px;
+letter-spacing:0.2em;
+text-transform:uppercase;
+font-size:12px;
+color:#d9ead3;
 }
 
-/* inputs */
+.logo{
+display:block;
+width:130px;
+height:auto;
+margin:0 auto 18px;
+filter:drop-shadow(0 10px 24px rgba(0,0,0,0.35));
+}
+
+.login-box h1{
+margin-bottom:28px;
+font-size:32px;
+font-weight:700;
+color:#f4f0e6;
+}
 
 .input-group{
 position:relative;
@@ -53,10 +71,10 @@ margin-bottom:30px;
 
 .input-group input{
 width:100%;
-padding:10px;
-background:transparent;
-border:none;
-border-bottom:2px solid #555;
+padding:16px 14px 10px;
+background:rgba(255,255,255,0.06);
+border:1px solid rgba(255,255,255,0.12);
+border-radius:14px;
 outline:none;
 color:white;
 font-size:16px;
@@ -64,45 +82,100 @@ font-size:16px;
 
 .input-group label{
 position:absolute;
-left:0;
-top:10px;
-color:#aaa;
+left:14px;
+top:14px;
+color:#c5cec7;
 pointer-events:none;
 transition:0.3s;
 }
 
-/* animation */
-
 .input-group input:focus + label,
 .input-group input:valid + label{
-top:-15px;
+top:-10px;
+left:10px;
+padding:0 6px;
 font-size:12px;
-color:#00ffff;
+color:#d8f0de;
+background:rgba(8,16,13,0.92);
 }
 
-/* button */
+.input-group input:focus{
+border-color:rgba(183,221,194,0.7);
+box-shadow:0 0 0 4px rgba(171,214,183,0.14);
+}
 
 button{
 width:100%;
 padding:12px;
 border:none;
-border-radius:8px;
-background:linear-gradient(45deg,#00ffff,#7fffd4);
-color:#000;
+border-radius:999px;
+background:linear-gradient(135deg,#d7b56d,#f2dfb3);
+color:#142117;
 font-weight:bold;
 cursor:pointer;
 transition:0.3s;
 }
 
 button:hover{
-transform:scale(1.05);
-box-shadow:0 0 20px #00ffff;
+transform:translateY(-1px);
+box-shadow:0 10px 24px rgba(215,181,109,0.25);
 }
-
-/* footer */
 
 .footer{
 margin-top:20px;
 font-size:12px;
-color:#888;
+letter-spacing:0.08em;
+text-transform:uppercase;
+color:#aeb7b0;
+}
+
+.aliada-info{
+width:min(100%,700px);
+padding:26px 28px;
+border-radius:22px;
+background:rgba(8,16,13,0.58);
+backdrop-filter:blur(12px);
+border:1px solid rgba(255,255,255,0.12);
+box-shadow:0 20px 50px rgba(0,0,0,0.28);
+}
+
+.aliada-info h2{
+margin-bottom:14px;
+font-size:24px;
+color:#f4f0e6;
+}
+
+.aliada-info p{
+margin-top:10px;
+line-height:1.7;
+color:#e5ece6;
+}
+
+.login-box.is-submitting{
+opacity:0.85;
+transform:scale(0.995);
+transition:opacity 180ms ease,transform 180ms ease;
+}
+
+button.is-loading{
+opacity:0.85;
+pointer-events:none;
+}
+
+@media (max-width:640px){
+.login-page{
+padding:24px 14px;
+}
+
+.login-box{
+padding:28px 22px;
+}
+
+.login-box h1{
+font-size:28px;
+}
+
+.aliada-info{
+padding:22px 18px;
+}
 }
