@@ -1,24 +1,31 @@
 const loginForm = document.querySelector("#loginForm");
 const submitButton = loginForm?.querySelector('button[type="submit"]');
 const loginBox = document.querySelector(".login-box");
+const requiredFields = loginForm?.querySelectorAll("input[required]");
 
 if (loginForm && submitButton && loginBox) {
+  requiredFields?.forEach((field) => {
+    field.addEventListener("input", () => {
+      field.classList.remove("is-invalid");
+    });
+  });
+
   loginForm.addEventListener("submit", (event) => {
-    event.preventDefault();
+    let hasErrors = false;
 
-    const username = document.querySelector("#username")?.value.trim();
-    const password = document.querySelector("#password")?.value.trim();
+    requiredFields?.forEach((field) => {
+      const isEmpty = !field.value.trim();
+      field.classList.toggle("is-invalid", isEmpty);
+      hasErrors = hasErrors || isEmpty;
+    });
 
-    if (!username || !password) {
+    if (hasErrors) {
+      event.preventDefault();
       return;
     }
 
     loginBox.classList.add("is-submitting");
     submitButton.classList.add("is-loading");
     submitButton.textContent = "Validando...";
-
-    window.setTimeout(() => {
-      submitButton.textContent = "Acceso listo";
-    }, 900);
   });
 }

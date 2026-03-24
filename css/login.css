@@ -104,6 +104,11 @@ border-color:rgba(183,221,194,0.7);
 box-shadow:0 0 0 4px rgba(171,214,183,0.14);
 }
 
+.input-group input.is-invalid{
+border-color:rgba(255,146,146,0.8);
+box-shadow:0 0 0 4px rgba(255,146,146,0.12);
+}
+
 button{
 width:100%;
 padding:12px;
