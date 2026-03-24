@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EW | Verificacion de anticipos</title>
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/tableroadmin.css">
+  <link rel="stylesheet" href="css/anticiposadmin.css">
+</head>
+<body data-page="anticipos">
+  <div class="page-shell">
+    <aside class="sidebar" data-sidebar></aside>
+
+    <main class="content-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Etherial Whisper</p>
+          <h1>Verificacion de anticipos</h1>
+        </div>
+        <div class="topbar-actions">
+          <span class="welcome-chip">Decision inmediata</span>
+          <a class="button ghost" href="/logout">Cerrar sesion</a>
+        </div>
+      </header>
+
+      <section class="hero-panel admin-hero">
+        <div>
+          <p class="hero-kicker">Modulo administrativo</p>
+          <h2>Valida soportes y libera el flujo antes de produccion</h2>
+          <p class="hero-copy">
+            Esta vista concentra comprobantes, similitud, cliente y acciones criticas sin mezclar
+            otros modulos. Todo esta visible para decidir en segundos.
+          </p>
+        </div>
+      </section>
+
+      <section class="panel module-panel">
+        <div class="panel-header views-header">
+          <div class="module-title-row">
+            <button class="button secondary" type="button" data-header-action="auto-check">Verificacion automatica</button>
+            <button class="button primary" type="button" data-header-action="upload-proof">Subir comprobantes</button>
+          </div>
+          <div>
+            <p class="panel-kicker">Anticipos</p>
+            <h3>Verificacion de anticipos</h3>
+          </div>
+          <span class="section-badge" id="statusBadge">3 pagos esperando decision</span>
+        </div>
+        <div class="view-shell" id="moduleContent"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="js/shared-layout-admin.js"></script>
+  <script src="js/admin-data.js"></script>
+  <script src="js/admin-common.js"></script>
+  <script src="js/anticiposadmin.js"></script>
+</body>
+</html>

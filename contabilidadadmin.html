@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EW | Contabilidad</title>
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/tableroadmin.css">
+  <link rel="stylesheet" href="css/contabilidadadmin.css">
+</head>
+<body data-page="contabilidad">
+  <div class="page-shell">
+    <aside class="sidebar" data-sidebar></aside>
+    <main class="content-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Etherial Whisper</p>
+          <h1>Contabilidad</h1>
+        </div>
+        <div class="topbar-actions">
+          <span class="welcome-chip">Control financiero</span>
+          <a class="button ghost" href="/logout">Cerrar sesion</a>
+        </div>
+      </header>
+
+      <section class="hero-panel admin-hero">
+        <div>
+          <p class="hero-kicker">Modulo administrativo</p>
+          <h2>Consulta libros, estado financiero y auxiliares en un solo contexto</h2>
+          <p class="hero-copy">Las pestañas internas cambian contenido dentro del modulo sin recargar y mantienen el mismo estilo del sistema.</p>
+        </div>
+      </section>
+
+      <section class="panel module-panel">
+        <div class="panel-header views-header">
+          <div>
+            <p class="panel-kicker">Contabilidad</p>
+            <h3>Panel financiero</h3>
+          </div>
+          <span class="section-badge" id="statusBadge">Conciliacion priorizada</span>
+          <div class="tabs admin-tabs">
+            <button class="tab active" type="button" data-tab="libros">Libros contables</button>
+            <button class="tab" type="button" data-tab="estado">Estado financiero</button>
+            <button class="tab" type="button" data-tab="auxiliares">Libros auxiliares</button>
+          </div>
+        </div>
+        <div class="view-shell" id="moduleContent"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="js/shared-layout-admin.js"></script>
+  <script src="js/admin-data.js"></script>
+  <script src="js/admin-common.js"></script>
+  <script src="js/contabilidadadmin.js"></script>
+</body>
+</html>

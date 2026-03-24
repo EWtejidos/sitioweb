@@ -17,6 +17,16 @@
 
             <form id="loginForm" action="/login" method="POST">
                 <div class="input-group">
+                    <select id="userType" name="user_type" required>
+                        <option value="" selected disabled hidden></option>
+                        <option value="tejedor">Tejedor</option>
+                        <option value="transportista">Transportista</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                    <label for="userType">Tipo de usuario</label>
+                </div>
+
+                <div class="input-group">
                     <input type="text" id="username" name="username" autocomplete="username" required>
                     <label for="username">Usuario</label>
                 </div>

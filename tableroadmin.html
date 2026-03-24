@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EW | Vista general</title>
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/tableroadmin.css">
+</head>
+<body data-page="general">
+  <div class="page-shell">
+    <aside class="sidebar" data-sidebar></aside>
+
+    <main class="content-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Etherial Whisper</p>
+          <h1>Vista general</h1>
+        </div>
+        <div class="topbar-actions">
+          <span class="welcome-chip">Control operativo total</span>
+          <a class="button ghost" href="/logout">Cerrar sesion</a>
+        </div>
+      </header>
+
+      <section class="hero-panel admin-hero">
+        <div>
+          <p class="hero-kicker">Modulo administrativo</p>
+          <h2>Resumen central del negocio y ordenes recientes</h2>
+          <p class="hero-copy">
+            Aqui se concentra el panorama general del flujo. Los modulos del sidebar mantienen su
+            trabajo separado y esta vista solo resume lo importante.
+          </p>
+        </div>
+      </section>
+
+      <section class="stats-grid admin-stats" id="summaryCards"></section>
+
+      <section class="panel progress-panel">
+        <div class="panel-header">
+          <div>
+            <p class="panel-kicker">Linea de progreso</p>
+            <h3>Estado completo de la operacion</h3>
+          </div>
+          <span class="section-badge" id="statusBadge">Monitoreo activo</span>
+        </div>
+        <div class="workflow-strip" id="workflowStrip"></div>
+      </section>
+
+      <section class="panel module-panel">
+        <div class="panel-header views-header">
+          <div>
+            <p class="panel-kicker">Vista general</p>
+            <h3>Ordenes recientes</h3>
+          </div>
+          <div class="tabs admin-tabs">
+            <button class="tab active" type="button" data-filter="pendientes">Pendientes</button>
+            <button class="tab" type="button" data-filter="proceso">En proceso</button>
+            <button class="tab" type="button" data-filter="completadas">Completadas</button>
+          </div>
+        </div>
+        <div class="overview-table-shell" id="overviewTable"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="js/shared-layout-admin.js"></script>
+  <script src="js/admin-data.js"></script>
+  <script src="js/admin-common.js"></script>
+  <script src="js/tableroadmin.js"></script>
+</body>
+</html>

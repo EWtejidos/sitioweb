@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EW | Gestion de transporte</title>
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/tableroadmin.css">
+  <link rel="stylesheet" href="css/transporteadmin.css">
+</head>
+<body data-page="transporte">
+  <div class="page-shell">
+    <aside class="sidebar" data-sidebar></aside>
+    <main class="content-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Etherial Whisper</p>
+          <h1>Gestion de transporte</h1>
+        </div>
+        <div class="topbar-actions">
+          <span class="welcome-chip">Logistica visible</span>
+          <a class="button ghost" href="/logout">Cerrar sesion</a>
+        </div>
+      </header>
+
+      <section class="hero-panel admin-hero">
+        <div>
+          <p class="hero-kicker">Modulo administrativo</p>
+          <h2>Prioriza entregas, distribuye rutas y confirma recepcion</h2>
+          <p class="hero-copy">Las pestañas de este modulo separan urgencias, transportistas y ordenes en entrega sin mezclar otras areas.</p>
+        </div>
+      </section>
+
+      <section class="panel module-panel">
+        <div class="panel-header views-header">
+          <div>
+            <p class="panel-kicker">Transporte</p>
+            <h3>Control logistico</h3>
+          </div>
+          <span class="section-badge" id="statusBadge">Ruta urgente activa</span>
+          <div class="tabs admin-tabs">
+            <button class="tab active" type="button" data-tab="entregas">Entregas proximas</button>
+            <button class="tab" type="button" data-tab="transportistas">Transportistas</button>
+            <button class="tab" type="button" data-tab="en-entrega">Ordenes en entrega</button>
+          </div>
+        </div>
+        <div class="view-shell" id="moduleContent"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="js/shared-layout-admin.js"></script>
+  <script src="js/admin-data.js"></script>
+  <script src="js/admin-common.js"></script>
+  <script src="js/transporteadmin.js"></script>
+</body>
+</html>

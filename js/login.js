@@ -1,11 +1,14 @@
 const loginForm = document.querySelector("#loginForm");
 const submitButton = loginForm?.querySelector('button[type="submit"]');
 const loginBox = document.querySelector(".login-box");
-const requiredFields = loginForm?.querySelectorAll("input[required]");
+const requiredFields = loginForm?.querySelectorAll("input[required], select[required]");
+const userTypeField = loginForm?.querySelector("#userType");
 
 if (loginForm && submitButton && loginBox) {
   requiredFields?.forEach((field) => {
-    field.addEventListener("input", () => {
+    const eventName = field.tagName === "SELECT" ? "change" : "input";
+
+    field.addEventListener(eventName, () => {
       field.classList.remove("is-invalid");
     });
   });
@@ -27,5 +30,13 @@ if (loginForm && submitButton && loginBox) {
     loginBox.classList.add("is-submitting");
     submitButton.classList.add("is-loading");
     submitButton.textContent = "Validando...";
+
+    if (userTypeField?.value === "admin") {
+      event.preventDefault();
+      submitButton.textContent = "Redirigiendo...";
+      window.setTimeout(() => {
+        window.location.href = "tableroadmin.html";
+      }, 250);
+    }
   });
 }

@@ -80,6 +80,22 @@ color:white;
 font-size:16px;
 }
 
+.input-group select{
+width:100%;
+padding:16px 14px 10px;
+background:rgba(255,255,255,0.06);
+border:1px solid rgba(255,255,255,0.12);
+border-radius:14px;
+outline:none;
+color:white;
+font-size:16px;
+appearance:none;
+}
+
+.input-group select option{
+color:#142117;
+}
+
 .input-group label{
 position:absolute;
 left:14px;
@@ -90,7 +106,9 @@ transition:0.3s;
 }
 
 .input-group input:focus + label,
-.input-group input:valid + label{
+.input-group input:valid + label,
+.input-group select:focus + label,
+.input-group select:valid + label{
 top:-10px;
 left:10px;
 padding:0 6px;
@@ -104,7 +122,17 @@ border-color:rgba(183,221,194,0.7);
 box-shadow:0 0 0 4px rgba(171,214,183,0.14);
 }
 
+.input-group select:focus{
+border-color:rgba(183,221,194,0.7);
+box-shadow:0 0 0 4px rgba(171,214,183,0.14);
+}
+
 .input-group input.is-invalid{
+border-color:rgba(255,146,146,0.8);
+box-shadow:0 0 0 4px rgba(255,146,146,0.12);
+}
+
+.input-group select.is-invalid{
 border-color:rgba(255,146,146,0.8);
 box-shadow:0 0 0 4px rgba(255,146,146,0.12);
 }
