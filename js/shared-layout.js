@@ -2,9 +2,9 @@ const currentPage = document.body.dataset.page;
 const sidebarTarget = document.querySelector("[data-sidebar]");
 
 const navigationItems = [
-  { id: "dashboard", label: "Dashboard", href: "/dashboard", icon: "D" },
-  { id: "productos", label: "Productos", href: "/productos", icon: "P" },
-  { id: "pedidos", label: "Pedidos", href: "/pedidos", icon: "O" }
+  { id: "dashboard", label: "Dashboard", href: "tablero.html", icon: "D" },
+  { id: "productos", label: "Productos", href: "pproductos.html", icon: "P" },
+  { id: "pedidos", label: "Pedidos", href: "pedidos.html", icon: "O" }
 ];
 
 if (sidebarTarget) {

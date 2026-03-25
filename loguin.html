@@ -14,7 +14,13 @@
             <p class="eyebrow">Portal de Aliadas</p>
             <img src="images/Branding/logo.png" class="logo" alt="Ethereal Whispers">
             <h1>Acceso seguro</h1>
-
+                {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="alert-error" style="color: #ff4d4d; margin-bottom: 15px; font-size: 0.9em; text-align: center;">
+                    {{ messages[0] }}
+                    </div>
+                {% endif %}
+                {% endwith %}
             <form id="loginForm" action="/login" method="POST">
                 <div class="input-group">
                     <select id="userType" name="user_type" required>
