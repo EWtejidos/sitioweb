@@ -5,16 +5,12 @@ const overviewTable = document.getElementById("overviewTable");
 const overviewTabs = document.querySelectorAll("[data-filter]");
 
 let overviewFilter = "pendientes";
-
-const recentOrders = [
-  { id: 1050, cliente: "Ana Martinez", fecha: "Hoy", estado: "pendiente", accion: "Asignar", actionStyle: "primary" },
-  { id: 1048, cliente: "Carlos Lopez", fecha: "15/04/2024", estado: "en-proceso", accion: "Gestionar", actionStyle: "warning" },
-  { id: 1045, cliente: "Laura Gomez", fecha: "10/04/2024", estado: "completada", accion: "Verificar pago", actionStyle: "secondary" }
-];
+let recentOrders = [];
 
 adminCommon.renderSummaryCards(overviewSummary);
 adminCommon.renderWorkflow(overviewWorkflow);
 renderOverviewTable();
+loadRecentOrders();
 
 overviewTabs.forEach((tab) => {
   tab.addEventListener("click", () => {
@@ -31,7 +27,14 @@ overviewTable.addEventListener("click", (event) => {
     return;
   }
 
-  adminCommon.setStatus(overviewStatus, `Accion preparada para la orden #${button.dataset.orderId}.`);
+  const order = recentOrders.find((item) => String(item.id) === button.dataset.orderId);
+  if (!order) {
+    adminCommon.setStatus(overviewStatus, "No se encontro la orden seleccionada.");
+    return;
+  }
+
+  const actionLabel = getOrderAction(order).label.toLowerCase();
+  adminCommon.setStatus(overviewStatus, `Orden #${order.id}: ${actionLabel} para ${order.cliente}.`);
 });
 
 function renderOverviewTable() {
@@ -67,24 +70,97 @@ function renderOverviewTable() {
           <tbody>
             ${filteredOrders
               .map(
-                (order) => `
+                (order) => {
+                  const action = getOrderAction(order);
+                  return `
                   <tr>
                     <td class="overview-id">#${order.id}</td>
                     <td>${order.cliente}</td>
                     <td>${order.fecha}</td>
                     <td><span class="status-badge ${adminCommon.normalizeStatusClass(order.estado)}">${adminCommon.formatStatus(order.estado)}</span></td>
                     <td>
-                      <button class="button ${order.actionStyle}" type="button" data-order-id="${order.id}">
-                        ${order.accion}
+                      <button class="button ${action.style}" type="button" data-order-id="${order.id}">
+                        ${action.label}
                       </button>
                     </td>
                   </tr>
-                `
+                `;
+                }
               )
-              .join("")}
+              .join("") || `
+                <tr>
+                  <td colspan="5">No hay ordenes en esta vista todavia.</td>
+                </tr>
+              `}
           </tbody>
         </table>
       </div>
     </div>
   `;
+}
+
+async function loadRecentOrders() {
+  adminCommon.setStatus(overviewStatus, "Cargando ordenes recientes del bot...");
+
+  try {
+    const response = await fetch("/api/admin/recent-orders", {
+      headers: {
+        Accept: "application/json"
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const orders = await response.json();
+    recentOrders = orders.map(mapOrderForView);
+    renderOverviewTable();
+    adminCommon.setStatus(overviewStatus, `${recentOrders.length} ordenes sincronizadas desde la base de datos.`);
+  } catch (error) {
+    console.error("No fue posible cargar las ordenes recientes", error);
+    recentOrders = [];
+    renderOverviewTable();
+    adminCommon.setStatus(overviewStatus, "No fue posible cargar las ordenes recientes desde el backend.");
+  }
+}
+
+function mapOrderForView(order) {
+  const estado = normalizeDashboardStatus(order.status);
+
+  return {
+    id: order.id,
+    cliente: order.cliente || "Cliente sin nombre",
+    fecha: order.fecha || "Sin fecha",
+    estado,
+    rawStatus: order.status,
+    producto: order.producto || "Producto personalizado",
+    anticipo: order.anticipo,
+    cotizacionMin: order.cotizacion_min,
+    cotizacionMax: order.cotizacion_max
+  };
+}
+
+function normalizeDashboardStatus(status) {
+  if (status === "comprado") {
+    return "en-proceso";
+  }
+
+  if (["terminado", "completado", "entregado"].includes(status)) {
+    return "completada";
+  }
+
+  return "pendiente";
+}
+
+function getOrderAction(order) {
+  if (order.rawStatus === "comprado") {
+    return { label: "Validar anticipo", style: "primary" };
+  }
+
+  if (order.estado === "completada") {
+    return { label: "Ver detalle", style: "secondary" };
+  }
+
+  return { label: "Revisar cotizacion", style: "warning" };
 }

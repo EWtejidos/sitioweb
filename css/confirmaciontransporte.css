@@ -1,0 +1,72 @@
+.summary-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  padding: 1.1rem;
+}
+
+.summary-tile.transport-summary {
+  border-radius: 24px;
+  padding: 1rem;
+  background: linear-gradient(180deg, rgba(255, 252, 237, 0.68), rgba(214, 204, 154, 0.24));
+  border: 1px solid rgba(195, 165, 79, 0.26);
+  box-shadow: inset 0 0 0 1px rgba(255, 244, 196, 0.28);
+}
+
+.transport-summary strong {
+  color: #4a4b2c;
+}
+
+.transport-summary span {
+  display: block;
+  margin-top: 0.35rem;
+  color: #5a6140;
+}
+
+.confirmation-list {
+  display: grid;
+  gap: 1rem;
+  padding: 1.1rem;
+}
+
+.confirmation-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) 180px auto;
+  gap: 1rem;
+  align-items: center;
+  padding: 1.1rem;
+}
+
+.confirmation-meta,
+.confirmation-proof,
+.confirmation-actions {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.confirmation-title {
+  margin: 0;
+  color: #414329;
+}
+
+.confirmation-proof img {
+  width: 100%;
+  aspect-ratio: 1.2;
+  object-fit: cover;
+  border-radius: 18px;
+  border: 1px solid rgba(176, 150, 76, 0.24);
+}
+
+.confirmation-actions .button {
+  width: 100%;
+}
+
+@media (max-width: 1180px) {
+  .summary-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .confirmation-card {
+    grid-template-columns: 1fr;
+  }
+}

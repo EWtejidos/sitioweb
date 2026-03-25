@@ -1,0 +1,144 @@
+.routes-overview {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.7fr);
+  gap: 1rem;
+  padding: 1.1rem;
+}
+
+.routes-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem 1.2rem;
+}
+
+.route-item {
+  display: flex;
+  gap: 0.7rem;
+  align-items: flex-start;
+  color: #42462b;
+}
+
+.route-index {
+  min-width: 1.9rem;
+  height: 1.9rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(112, 128, 77, 0.12);
+  color: #50603a;
+  font-weight: 800;
+}
+
+.day-tools {
+  display: grid;
+  align-content: start;
+}
+
+.cta-stack {
+  display: grid;
+  gap: 0.8rem;
+  margin: 1rem 0;
+}
+
+.manifest-panel {
+  padding: 1.25rem;
+}
+
+.manifest-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.transport-filters {
+  justify-content: flex-end;
+}
+
+.manifest-table-shell {
+  overflow-x: auto;
+  border-radius: 24px;
+  background: rgba(255, 251, 236, 0.54);
+  border: 1px solid rgba(197, 171, 92, 0.22);
+}
+
+.manifest-table {
+  width: 100%;
+  min-width: 840px;
+  border-collapse: collapse;
+}
+
+.manifest-table th,
+.manifest-table td {
+  padding: 1rem 0.9rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(181, 157, 83, 0.18);
+}
+
+.manifest-table th {
+  color: #5c5b34;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.manifest-table td {
+  color: #393e28;
+}
+
+.manifest-table tbody tr:hover {
+  background: rgba(214, 197, 133, 0.08);
+}
+
+.action-pill,
+.status-pill {
+  display: inline-flex;
+  width: fit-content;
+  padding: 0.42rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.action-pill.recoger {
+  background: rgba(108, 128, 69, 0.14);
+  color: #4d6133;
+}
+
+.action-pill.entregar {
+  background: rgba(182, 135, 53, 0.16);
+  color: #876121;
+}
+
+.status-pill.confirmado {
+  background: rgba(68, 123, 74, 0.16);
+  color: #2f6f3c;
+}
+
+.status-pill.pendiente {
+  background: rgba(174, 127, 43, 0.18);
+  color: #8b621d;
+}
+
+@media (max-width: 1180px) {
+  .routes-overview {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .routes-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .manifest-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .transport-filters {
+    justify-content: flex-start;
+  }
+}

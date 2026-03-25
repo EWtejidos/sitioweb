@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EW | Confirmacion</title>
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/transportista-shared.css">
+  <link rel="stylesheet" href="css/confirmaciontransporte.css">
+</head>
+<body data-transport-page="confirmacion">
+  <div class="page-shell transport-shell">
+    <aside class="sidebar transport-sidebar" data-transport-sidebar></aside>
+
+    <main class="content-shell transport-content">
+      <header class="transport-topbar">
+        <div>
+          <p class="eyebrow">Panel de transportistas</p>
+          <h1>Confirmacion de entregas</h1>
+          <p class="transport-subtitle">Revisa evidencias, valida autorizados y marca el cierre de cada despacho.</p>
+        </div>
+        <div class="topbar-actions">
+          <span class="welcome-chip" id="confirmationBadge">2 entregas listas para cierre</span>
+          <a class="button ghost" href="loguin.html">Cerrar sesion</a>
+        </div>
+      </header>
+
+      <section class="transport-card summary-strip" id="confirmationSummary"></section>
+      <section class="transport-card confirmation-list" id="confirmationList"></section>
+    </main>
+  </div>
+
+  <script src="js/transportista-data.js"></script>
+  <script src="js/shared-layout-transportista.js"></script>
+  <script src="js/confirmaciontransporte.js"></script>
+</body>
+</html>
