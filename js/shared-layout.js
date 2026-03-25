@@ -2,8 +2,8 @@ const currentPage = document.body.dataset.page;
 const sidebarTarget = document.querySelector("[data-sidebar]");
 
 const navigationItems = [
-  { id: "dashboard", label: "Dashboard", href: "tablero.html", icon: "D" },
-  { id: "productos", label: "Productos", href: "pproductos.html", icon: "P" },
+  { id: "dashboard", label: "Dashboard", href: "dashboard.html", icon: "D" },
+  { id: "productos", label: "Productos", href: "productos.html", icon: "P" },
   { id: "pedidos", label: "Pedidos", href: "pedidos.html", icon: "O" }
 ];
 

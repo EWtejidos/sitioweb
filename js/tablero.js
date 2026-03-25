@@ -42,7 +42,7 @@ pedidos.forEach((pedido) => {
 });
 
 document.getElementById("btnSubir").addEventListener("click", () => {
-  window.location.href = "pproductos.html";
+  window.location.href = "productos.html";
 });
 
 document.getElementById("btnPedidos").addEventListener("click", () => {
