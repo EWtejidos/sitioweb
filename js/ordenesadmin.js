@@ -4,8 +4,10 @@ const ordenesTabs = document.querySelectorAll("[data-tab]");
 
 let ordenesTabActual = "fase1";
 const ordenesFiltros = { conFecha: true, sinFecha: true, asignado: true, noAsignado: true };
+let ordenes = [];
 
 renderOrdenesTab();
+loadOrdenes();
 
 ordenesTabs.forEach((tab) => {
   tab.addEventListener("click", () => {
@@ -31,67 +33,145 @@ ordenesContainer.addEventListener("click", (event) => {
     return;
   }
 
-  const id = Number(button.dataset.id);
-
-  if (button.dataset.action === "assign") {
-    const item = adminData.preAsignacion.find((orden) => orden.id === id);
-    if (item) {
-      item.assigned = true;
-      item.weaver = "Luisa Medina";
-      adminCommon.setStatus(ordenesStatus, `Tejedora asignada a la orden #${id}.`);
-    }
+  const item = ordenes.find((orden) => String(orden.id) === button.dataset.id);
+  if (!item) {
+    adminCommon.setStatus(ordenesStatus, "No se encontro la orden seleccionada.");
+    return;
   }
 
-  if (button.dataset.action === "edit-date") {
-    const item = adminData.preAsignacion.find((orden) => orden.id === id);
-    if (item) {
-      item.fecha = item.fecha || "2026-04-02";
-      adminCommon.setStatus(ordenesStatus, `Fecha actualizada para la orden #${id}.`);
-    }
-  }
+  const messages = {
+    assign: `Asignacion pendiente para ${item.orderCode}.`,
+    "edit-date": `Fecha operativa pendiente para ${item.orderCode}.`,
+    "message-weaver": `Mensaje listo para tejedoras sobre ${item.orderCode}.`,
+    "message-client": `Mensaje preparado para ${item.cliente} sobre ${item.orderCode}.`,
+    ready: `Orden ${item.orderCode} lista para marcar cierre de produccion.`,
+    "request-payment": `Solicitud de pago final pendiente para ${item.orderCode}.`,
+    "approve-payment": `Pago final de ${item.orderCode} listo para validacion administrativa.`,
+    "reject-payment": `Pago final de ${item.orderCode} marcado para revision.`,
+    "send-transport": `Orden ${item.orderCode} lista para pasar a transporte.`
+  };
 
-  if (button.dataset.action === "message-weaver") {
-    adminCommon.setStatus(ordenesStatus, `Mensaje listo: "Orden #${id} disponible, ¿puedes hacerla?"`);
-  }
-
-  if (button.dataset.action === "message-client") {
-    adminCommon.setStatus(ordenesStatus, `Mensaje preparado para cliente de la orden #${id}.`);
-  }
-
-  if (button.dataset.action === "ready") {
-    const item = adminData.produccion.find((orden) => orden.id === id);
-    if (item) {
-      item.status = "listo";
-      adminCommon.setStatus(ordenesStatus, `Orden #${id} marcada como lista.`);
-    }
-  }
-
-  if (button.dataset.action === "request-payment") {
-    adminCommon.setStatus(ordenesStatus, `Solicitud de pago final enviada para la orden #${id}.`);
-  }
-
-  if (button.dataset.action === "approve-payment") {
-    const item = adminData.pagoFinal.find((orden) => orden.id === id);
-    if (item) {
-      item.status = "aprobado";
-      adminCommon.setStatus(ordenesStatus, `Pago final de la orden #${id} aprobado.`);
-    }
-  }
-
-  if (button.dataset.action === "reject-payment") {
-    const item = adminData.pagoFinal.find((orden) => orden.id === id);
-    if (item) {
-      item.status = "rechazado";
-      adminCommon.setStatus(ordenesStatus, `Pago final de la orden #${id} rechazado.`);
-    }
-  }
-
-  if (button.dataset.action === "send-transport") {
-    adminCommon.setStatus(ordenesStatus, `Orden #${id} lista para pasar al modulo de transporte.`);
-  }
-
-  renderOrdenesTab();
+  adminCommon.setStatus(ordenesStatus, messages[button.dataset.action] || `Accion lista para ${item.orderCode}.`);
 });
+
+async function loadOrdenes() {
+  adminCommon.setStatus(ordenesStatus, "Cargando ordenes reales...");
+
+  try {
+    const response = await fetch("/api/admin/orders", {
+      headers: {
+        Accept: "application/json"
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const orders = await response.json();
+    ordenes = orders.map(mapOrderForView);
+    renderOrdenesTab();
+    adminCommon.setStatus(ordenesStatus, `${ordenes.length} ordenes cargadas desde la base de datos.`);
+  } catch (error) {
+    console.error("No fue posible cargar las ordenes", error);
+    ordenes = [];
+    renderOrdenesTab();
+    adminCommon.setStatus(ordenesStatus, "No fue posible cargar las ordenes desde el backend.");
+  }
+}
+
+function mapOrderForView(order) {
+  const workflow = mapWorkflowStatus(order.status);
+
+  return {
+    id: order.id,
+    orderCode: order.order_code || `#${order.id}`,
+    cliente: order.cliente || "Cliente sin nombre",
+    producto: order.producto || "Producto personalizado",
+    fecha: order.fecha || "",
+    fechaHora: order.fecha_hora || "Sin fecha",
+    assigned: false,
+    weaver: "Sin asignar",
+    price: formatCurrency(order.cotizacion_max || order.cotizacion_min),
+    startDate: order.fecha || "Pendiente",
+    deliveryDate: "Por definir",
+    paymentProof: normalizeImagePath(order.payment_proof),
+    amount: formatCurrency(order.anticipo),
+    checklist: order.description || "Pendiente checklist final",
+    rawStatus: order.status,
+    workflow
+  };
+}
+
+function mapWorkflowStatus(status) {
+  if (status === "cotizacion") {
+    return {
+      fase1: true,
+      fase2: false,
+      fase3: false,
+      fase4: false,
+      statusLabel: "pendiente"
+    };
+  }
+
+  if (status === "comprado") {
+    return {
+      fase1: false,
+      fase2: true,
+      fase3: false,
+      fase4: false,
+      statusLabel: "en-produccion"
+    };
+  }
+
+  if (["pago_final", "pago-final", "pago final"].includes(status)) {
+    return {
+      fase1: false,
+      fase2: false,
+      fase3: true,
+      fase4: false,
+      statusLabel: "pendiente"
+    };
+  }
+
+  if (["terminado", "completado", "entregado"].includes(status)) {
+    return {
+      fase1: false,
+      fase2: false,
+      fase3: false,
+      fase4: true,
+      statusLabel: "listo para transporte"
+    };
+  }
+
+  return {
+    fase1: true,
+    fase2: false,
+    fase3: false,
+    fase4: false,
+    statusLabel: "pendiente"
+  };
+}
+
+function normalizeImagePath(path) {
+  if (!path) {
+    return "images/products/top.jpg";
+  }
+
+  return path.replace(/\\/g, "/").replace(/^\.\//, "");
+}
+
+function formatCurrency(value) {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) {
+    return "Sin valor";
+  }
+
+  return new Intl.NumberFormat("es-CO", {
+    style: "currency",
+    currency: "COP",
+    maximumFractionDigits: 0
+  }).format(Number(value));
+}
 
 function renderOrdenesTab() {
   const views = {
@@ -105,20 +185,22 @@ function renderOrdenesTab() {
 }
 
 function renderFase1() {
-  const ordenes = adminData.preAsignacion.filter((orden) => {
-    const hasDate = Boolean(orden.fecha);
-    const matchesDate = hasDate ? ordenesFiltros.conFecha : ordenesFiltros.sinFecha;
-    const matchesAssigned = orden.assigned ? ordenesFiltros.asignado : ordenesFiltros.noAsignado;
-    return matchesDate && matchesAssigned;
-  });
+  const fase1Ordenes = ordenes
+    .filter((orden) => orden.workflow.fase1)
+    .filter((orden) => {
+      const hasDate = Boolean(orden.fecha);
+      const matchesDate = hasDate ? ordenesFiltros.conFecha : ordenesFiltros.sinFecha;
+      const matchesAssigned = orden.assigned ? ordenesFiltros.asignado : ordenesFiltros.noAsignado;
+      return matchesDate && matchesAssigned;
+    });
 
-  const markup = ordenes
+  const markup = fase1Ordenes
     .map(
       (orden) => `
         <article class="record-card">
           <div class="record-main">
             <div class="record-title-row">
-              <h4 class="record-title">Orden #${orden.id} · ${orden.producto}</h4>
+              <h4 class="record-title">Orden ${orden.orderCode} · ${orden.producto}</h4>
               <span class="status-badge ${orden.assigned ? "aprobado" : "pendiente"}">${orden.assigned ? "asignado" : "no asignado"}</span>
             </div>
             <span class="record-meta">Cliente: ${orden.cliente} · Precio: ${orden.price}</span>
@@ -147,7 +229,7 @@ function renderFase1() {
       <div class="section-topline">
         <div>
           <h4>Pre-asignacion</h4>
-          <span class="mini-copy">Filtros visibles y accion directa sin salir de la pantalla.</span>
+          <span class="mini-copy">Ordenes cotizadas listas para ser movidas a produccion.</span>
         </div>
         <div class="filter-row">
           <label class="filter-chip"><input type="checkbox" data-filter="conFecha" ${ordenesFiltros.conFecha ? "checked" : ""}> Con fecha</label>
@@ -156,29 +238,31 @@ function renderFase1() {
           <label class="filter-chip"><input type="checkbox" data-filter="noAsignado" ${ordenesFiltros.noAsignado ? "checked" : ""}> No asignado</label>
         </div>
       </div>
-      <div class="record-list">${markup}</div>
+      <div class="record-list">${markup || emptyState("No hay ordenes en pre-asignacion todavia.")}</div>
     </article>
   `;
 }
 
 function renderFase2() {
+  const fase2Ordenes = ordenes.filter((orden) => orden.workflow.fase2);
+
   return `
     <article class="section-card">
       <div class="section-topline">
         <div>
           <h4>Produccion</h4>
-          <span class="mini-copy">Inicio, entrega y estado visibles con acciones directas.</span>
+          <span class="mini-copy">Ordenes con anticipo recibido y listas para seguimiento operativo.</span>
         </div>
       </div>
       <div class="record-list">
-        ${adminData.produccion
+        ${fase2Ordenes
           .map(
             (orden) => `
               <article class="record-card production-card">
                 <div class="record-main">
                   <div class="record-title-row">
-                    <h4 class="record-title">Orden #${orden.id} · ${orden.producto}</h4>
-                    <span class="status-badge ${adminCommon.normalizeStatusClass(orden.status)}">${adminCommon.formatStatus(orden.status)}</span>
+                    <h4 class="record-title">Orden ${orden.orderCode} · ${orden.producto}</h4>
+                    <span class="status-badge ${adminCommon.normalizeStatusClass(orden.workflow.statusLabel)}">${adminCommon.formatStatus(orden.workflow.statusLabel)}</span>
                   </div>
                   <span class="record-meta">Cliente: ${orden.cliente} · Tejedor: ${orden.weaver}</span>
                   <div class="production-dates">
@@ -194,72 +278,76 @@ function renderFase2() {
               </article>
             `
           )
-          .join("")}
+          .join("") || emptyState("No hay ordenes en produccion todavia.")}
       </div>
     </article>
   `;
 }
 
 function renderFase3() {
+  const fase3Ordenes = ordenes.filter((orden) => orden.workflow.fase3);
+
   return `
     <article class="section-card">
       <div class="section-topline">
         <div>
           <h4>Pago final</h4>
-          <span class="mini-copy">Validacion del comprobante final antes de liberar despacho.</span>
+          <span class="mini-copy">Vista lista para validar comprobantes finales cuando ese estado exista en la base.</span>
         </div>
       </div>
       <div class="record-list">
-        ${adminData.pagoFinal
+        ${fase3Ordenes
           .map(
-            (pago) => `
+            (orden) => `
               <article class="record-card">
                 <div class="record-main">
                   <div class="record-title-row">
-                    <h4 class="record-title">Orden #${pago.id}</h4>
-                    <span class="status-badge ${adminCommon.normalizeStatusClass(pago.status)}">${adminCommon.formatStatus(pago.status)}</span>
+                    <h4 class="record-title">Orden ${orden.orderCode}</h4>
+                    <span class="status-badge ${adminCommon.normalizeStatusClass(orden.rawStatus)}">${adminCommon.formatStatus(orden.rawStatus)}</span>
                   </div>
-                  <span class="record-meta">Cliente: ${pago.cliente} · Pago final ${pago.amount}</span>
-                  <span class="muted">${pago.validated}</span>
+                  <span class="record-meta">Cliente: ${orden.cliente} · Pago final ${orden.amount}</span>
+                  <span class="muted">Orden lista para comprobante final.</span>
                 </div>
                 <div class="record-side">
                   <div class="evidence-card">
                     <span class="evidence-label">Comprobante cliente</span>
-                    <img class="evidence-image" src="${pago.proof}" alt="Comprobante pago final">
+                    <img class="evidence-image" src="${orden.paymentProof}" alt="Comprobante pago final ${orden.orderCode}">
                   </div>
                 </div>
                 <div class="record-actions">
-                  <button class="button primary" type="button" data-action="approve-payment" data-id="${pago.id}">Aprobar pago</button>
-                  <button class="button danger" type="button" data-action="reject-payment" data-id="${pago.id}">Rechazar</button>
-                  <button class="button secondary" type="button" data-action="message-client" data-id="${pago.id}">Escribir cliente</button>
+                  <button class="button primary" type="button" data-action="approve-payment" data-id="${orden.id}">Aprobar pago</button>
+                  <button class="button danger" type="button" data-action="reject-payment" data-id="${orden.id}">Rechazar</button>
+                  <button class="button secondary" type="button" data-action="message-client" data-id="${orden.id}">Escribir cliente</button>
                 </div>
               </article>
             `
           )
-          .join("")}
+          .join("") || emptyState("Aun no hay ordenes en fase de pago final.")}
       </div>
     </article>
   `;
 }
 
 function renderFase4() {
+  const fase4Ordenes = ordenes.filter((orden) => orden.workflow.fase4);
+
   return `
     <article class="section-card">
       <div class="section-topline">
         <div>
           <h4>Cierre y despacho</h4>
-          <span class="mini-copy">Ultimo control antes de pasar al modulo de transporte.</span>
+          <span class="mini-copy">Ordenes terminadas listas para pasar al modulo de transporte.</span>
         </div>
       </div>
       <div class="record-list">
-        ${adminData.cierre
+        ${fase4Ordenes
           .map(
             (orden) => `
               <article class="record-card">
                 <div class="record-main">
                   <div class="record-title-row">
-                    <h4 class="record-title">Orden #${orden.id} · ${orden.producto}</h4>
-                    <span class="status-badge pendiente">${orden.estado}</span>
+                    <h4 class="record-title">Orden ${orden.orderCode} · ${orden.producto}</h4>
+                    <span class="status-badge pendiente">${orden.workflow.statusLabel}</span>
                   </div>
                   <span class="record-meta">Cliente: ${orden.cliente}</span>
                   <span class="muted">${orden.checklist}</span>
@@ -271,8 +359,12 @@ function renderFase4() {
               </article>
             `
           )
-          .join("")}
+          .join("") || emptyState("No hay ordenes listas para despacho todavia.")}
       </div>
     </article>
   `;
+}
+
+function emptyState(message) {
+  return `<article class="record-card"><div class="record-main"><span class="record-meta">${message}</span></div></article>`;
 }

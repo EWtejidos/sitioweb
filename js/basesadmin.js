@@ -3,8 +3,10 @@ const basesStatus = document.getElementById("statusBadge");
 const basesTabs = document.querySelectorAll("[data-tab]");
 
 let basesTabActual = "clientes";
+let customers = [];
 
 renderBasesTab();
+loadCustomers();
 
 basesTabs.forEach((tab) => {
   tab.addEventListener("click", () => {
@@ -26,7 +28,7 @@ basesContainer.addEventListener("click", (event) => {
 
 function renderBasesTab() {
   const map = {
-    clientes: adminData.clientes,
+    clientes: customers.length ? customers : adminData.clientes,
     tejedores: adminData.tejedores,
     transportistas: adminData.baseTransportistas
   };
@@ -55,4 +57,27 @@ function renderBasesTab() {
       </div>
     </article>
   `;
+}
+
+async function loadCustomers() {
+  try {
+    const response = await fetch("/api/admin/customers", {
+      headers: {
+        Accept: "application/json"
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    customers = await response.json();
+    if (basesTabActual === "clientes") {
+      renderBasesTab();
+    }
+    adminCommon.setStatus(basesStatus, `${customers.length} clientes cargados desde la base de datos.`);
+  } catch (error) {
+    console.error("No fue posible cargar la base de clientes", error);
+    adminCommon.setStatus(basesStatus, "Mostrando base mock mientras se conecta la base real de clientes.");
+  }
 }
