@@ -3,14 +3,20 @@ const anticiposStatus = document.getElementById("statusBadge");
 
 let anticipos = [];
 let showBulkUploadHelp = false;
-let currentReferenceOrderId = null;
 const uploadingReferenceIds = new Set();
-
-const singleReferenceInput = createReferenceInput();
-const bulkReferenceInput = createReferenceInput(true);
 
 renderAnticipos();
 loadAnticipos();
+
+anticiposContainer.addEventListener("change", (event) => {
+  const input = event.target.closest("[data-reference-input]");
+  if (!input || !input.files || !input.files.length) {
+    return;
+  }
+
+  handleSingleReferenceUpload(input.dataset.id, input.files[0]);
+  input.value = "";
+});
 
 anticiposContainer.addEventListener("click", (event) => {
   const button = event.target.closest("[data-action]");
@@ -26,8 +32,10 @@ anticiposContainer.addEventListener("click", (event) => {
   }
 
   if (button.dataset.action === "upload-reference") {
-    currentReferenceOrderId = item.id;
-    singleReferenceInput.click();
+    const input = document.getElementById(`reference-input-${item.id}`);
+    if (input) {
+      input.click();
+    }
     return;
   }
 
@@ -59,20 +67,9 @@ document.addEventListener("click", (event) => {
   }
 
   if (button.dataset.headerAction === "upload-proof") {
-    const ordersPendingReference = anticipos.filter((item) => !item.referenceImage);
     showBulkUploadHelp = true;
     renderAnticipos();
-
-    if (!ordersPendingReference.length) {
-      adminCommon.setStatus(anticiposStatus, "Todas las filas ya tienen imagen de referencia. Usa las de cada fila si necesitas reemplazarlas despues.");
-      return;
-    }
-
-    adminCommon.setStatus(
-      anticiposStatus,
-      `Selecciona imagenes desde tu PC. Se asignaran en orden a ${ordersPendingReference.length} fila(s) sin referencia.`
-    );
-    bulkReferenceInput.click();
+    adminCommon.setStatus(anticiposStatus, "Usa el boton Subir de cada fila en la columna Referencia para escoger una imagen desde tu PC.");
   }
 });
 
@@ -106,6 +103,7 @@ async function loadAnticipos() {
 }
 
 function mapAnticipoForView(order) {
+  // Esta referencia es manual y exclusiva del panel admin.
   const referenceImage = normalizeImagePath(order.reference_image, "");
 
   return {
@@ -183,7 +181,7 @@ function renderAnticipos() {
       ${showBulkUploadHelp ? `
         <div class="reference-upload-banner">
           <strong>Subida de referencias desde PC</strong>
-          <p>Selecciona varias imagenes y el sistema las asigna en orden a las filas que aun no tengan referencia. Si prefieres control manual, usa el boton "Agregar imagen" en la fila correspondiente.</p>
+          <p>Cada fila tiene su propio boton Subir. Haz clic en ese boton dentro de la columna Referencia, elige una imagen desde tu PC y la vista previa aparecera en esa misma celda.</p>
         </div>
       ` : ""}
       <div class="verification-table-wrap">
@@ -224,38 +222,11 @@ function renderReferenceCell(anticipo) {
   const isUploading = uploadingReferenceIds.has(String(anticipo.id));
   return `
     <div class="reference-slot is-empty">
-      <button class="button secondary reference-upload-button" type="button" data-action="upload-reference" data-id="${anticipo.id}" ${isUploading ? "disabled" : ""}>
-        ${isUploading ? "Subiendo..." : "Agregar imagen"}
-      </button>
+      <button class="button secondary reference-upload-button" type="button" data-action="upload-reference" data-id="${anticipo.id}" ${isUploading ? "disabled" : ""}>${isUploading ? "Subiendo..." : "Subir"}</button>
+      <input class="reference-file-input" id="reference-input-${anticipo.id}" type="file" accept="image/*" data-reference-input data-id="${anticipo.id}" hidden>
       <span class="reference-placeholder">Esperando imagen</span>
     </div>
   `;
-}
-
-function createReferenceInput(multiple = false) {
-  const input = document.createElement("input");
-  input.type = "file";
-  input.accept = "image/*";
-  input.multiple = multiple;
-  input.hidden = true;
-  document.body.appendChild(input);
-
-  input.addEventListener("change", async () => {
-    const files = Array.from(input.files || []);
-    if (!files.length) {
-      return;
-    }
-
-    if (multiple) {
-      await handleBulkReferenceUpload(files);
-    } else if (currentReferenceOrderId) {
-      await handleSingleReferenceUpload(currentReferenceOrderId, files[0]);
-    }
-
-    input.value = "";
-  });
-
-  return input;
 }
 
 async function handleSingleReferenceUpload(orderId, file) {
@@ -269,6 +240,7 @@ async function handleSingleReferenceUpload(orderId, file) {
   renderAnticipos();
 
   try {
+    // Envia una sola imagen y la amarra a la orden seleccionada.
     const formData = new FormData();
     formData.append("order_id", String(orderId));
     formData.append("reference_image", file);
@@ -290,61 +262,12 @@ async function handleSingleReferenceUpload(orderId, file) {
     adminCommon.setStatus(anticiposStatus, `No fue posible subir la referencia para la orden ${anticipo.orderCode}.`);
   } finally {
     uploadingReferenceIds.delete(String(orderId));
-    currentReferenceOrderId = null;
-    renderAnticipos();
-  }
-}
-
-async function handleBulkReferenceUpload(files) {
-  const ordersPendingReference = anticipos.filter((item) => !item.referenceImage);
-
-  if (!ordersPendingReference.length) {
-    adminCommon.setStatus(anticiposStatus, "No hay filas pendientes para recibir imagenes de referencia.");
-    return;
-  }
-
-  const assignedOrders = ordersPendingReference.slice(0, files.length);
-  const assignedFiles = files.slice(0, assignedOrders.length);
-
-  assignedOrders.forEach((item) => uploadingReferenceIds.add(String(item.id)));
-  renderAnticipos();
-
-  try {
-    const formData = new FormData();
-    assignedOrders.forEach((item, index) => {
-      formData.append("order_ids", String(item.id));
-      formData.append("reference_images", assignedFiles[index]);
-    });
-
-    const response = await fetch("/api/admin/orders/reference-images", {
-      method: "POST",
-      body: formData
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-
-    const updatedOrders = await response.json();
-    updatedOrders.forEach(updateAnticipoFromOrder);
-
-    const remainingFiles = files.length - assignedOrders.length;
-    adminCommon.setStatus(
-      anticiposStatus,
-      remainingFiles > 0
-        ? `${assignedOrders.length} referencias cargadas. ${remainingFiles} imagen(es) no se usaron porque no habia mas filas pendientes.`
-        : `${assignedOrders.length} referencias cargadas y vinculadas a sus filas correspondientes.`
-    );
-  } catch (error) {
-    console.error("No fue posible subir las referencias", error);
-    adminCommon.setStatus(anticiposStatus, "No fue posible subir las imagenes de referencia.");
-  } finally {
-    assignedOrders.forEach((item) => uploadingReferenceIds.delete(String(item.id)));
     renderAnticipos();
   }
 }
 
 function updateAnticipoFromOrder(order) {
+  // Reemplaza la fila actual con la respuesta mas reciente del backend.
   const updatedAnticipo = mapAnticipoForView(order);
   anticipos = anticipos.map((item) => (String(item.id) === String(order.id) ? updatedAnticipo : item));
 }
