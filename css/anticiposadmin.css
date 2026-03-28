@@ -2,6 +2,65 @@
   overflow: hidden;
 }
 
+.verification-table {
+  min-width: 100%;
+  table-layout: fixed;
+}
+
+.verification-table th,
+.verification-table td {
+  padding: 0.8rem 0.65rem;
+  vertical-align: middle;
+}
+
+.verification-table th {
+  font-size: 0.78rem;
+}
+
+.verification-order-id {
+  width: 12%;
+}
+
+.verification-table td:nth-child(2) {
+  width: 14%;
+  word-break: break-word;
+}
+
+.verification-table td:nth-child(3),
+.verification-table td:nth-child(4) {
+  width: 18%;
+}
+
+.verification-table td:nth-child(5) {
+  width: 9%;
+}
+
+.verification-table td:nth-child(6) {
+  width: 12%;
+}
+
+.verification-table td:nth-child(7) {
+  width: 17%;
+}
+
+.verification-proof {
+  width: 100%;
+  max-width: 118px;
+  height: 66px;
+}
+
+.verification-actions {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.verification-actions .button {
+  width: 100%;
+  min-width: 0;
+  padding: 0.8rem 0.7rem;
+  font-size: 0.95rem;
+}
+
 .reference-upload-banner {
   margin-bottom: 1rem;
   padding: 1rem 1.25rem;
@@ -32,8 +91,8 @@
 }
 
 .reference-slot.is-empty {
-  min-width: 140px;
-  padding: 1rem 0.75rem;
+  min-width: 0;
+  padding: 0.85rem 0.65rem;
   border: 1px dashed rgba(15, 23, 42, 0.18);
   border-radius: 1rem;
   background: rgba(148, 163, 184, 0.08);
@@ -132,4 +191,20 @@
   display: flex;
   justify-content: flex-end;
   margin-top: 1rem;
+}
+
+@media (max-width: 1180px) {
+  .verification-table {
+    min-width: 920px;
+  }
+
+  .verification-proof {
+    max-width: 104px;
+    height: 60px;
+  }
+
+  .verification-actions .button {
+    padding: 0.7rem 0.6rem;
+    font-size: 0.88rem;
+  }
 }

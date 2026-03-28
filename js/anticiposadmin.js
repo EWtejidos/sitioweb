@@ -1,5 +1,6 @@
 const anticiposContainer = document.getElementById("moduleContent");
 const anticiposStatus = document.getElementById("statusBadge");
+const modalHost = createModalHost();
 
 let anticipos = [];
 let showBulkUploadHelp = false;
@@ -236,7 +237,9 @@ function renderAnticipos() {
         </table>
       </div>
     </article>
-  ` + renderImagePreviewModal() + renderRejectModal();
+  `;
+
+  renderFloatingModals();
 }
 
 function renderReferenceCell(anticipo) {
@@ -318,6 +321,10 @@ function renderImagePreviewModal() {
   `;
 }
 
+function renderFloatingModals() {
+  modalHost.innerHTML = renderImagePreviewModal() + renderRejectModal();
+}
+
 function renderRejectModal() {
   if (!rejectModalOrderId) {
     return "";
@@ -348,7 +355,7 @@ function renderRejectModal() {
 
 function openImagePreview(src, alt) {
   activePreview = { src, alt };
-  renderAnticipos();
+  renderFloatingModals();
 }
 
 function closeImagePreview() {
@@ -357,12 +364,12 @@ function closeImagePreview() {
   }
 
   activePreview = null;
-  renderAnticipos();
+  renderFloatingModals();
 }
 
 function openRejectModal(anticipo) {
   rejectModalOrderId = anticipo.id;
-  renderAnticipos();
+  renderFloatingModals();
 }
 
 function closeRejectModal() {
@@ -371,7 +378,7 @@ function closeRejectModal() {
   }
 
   rejectModalOrderId = null;
-  renderAnticipos();
+  renderFloatingModals();
 }
 
 async function handleApprove(anticipo) {
@@ -488,4 +495,16 @@ async function copyToClipboard(text) {
   if (!copied) {
     throw new Error("No se pudo copiar el mensaje.");
   }
+}
+
+function createModalHost() {
+  const existingHost = document.getElementById("anticiposModalHost");
+  if (existingHost) {
+    return existingHost;
+  }
+
+  const host = document.createElement("div");
+  host.id = "anticiposModalHost";
+  document.body.appendChild(host);
+  return host;
 }
