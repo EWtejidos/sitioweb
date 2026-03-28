@@ -106,7 +106,7 @@ async function loadAnticipos() {
 }
 
 function mapAnticipoForView(order) {
-  const referenceImage = normalizeImagePath(order.product_image, "");
+  const referenceImage = normalizeImagePath(order.reference_image, "");
 
   return {
     id: order.id,
