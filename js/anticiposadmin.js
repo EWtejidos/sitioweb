@@ -4,6 +4,9 @@ const anticiposStatus = document.getElementById("statusBadge");
 let anticipos = [];
 let showBulkUploadHelp = false;
 const uploadingReferenceIds = new Set();
+const ANTICIPO_REJECT_TEMPLATE = "Estimado cliente el anticipo no concuerda con lo recibido. Si desea subirlo nuevamente escriba anticipo+{orderId}.";
+let activePreview = null;
+let rejectModalOrderId = null;
 
 renderAnticipos();
 loadAnticipos();
@@ -20,6 +23,13 @@ anticiposContainer.addEventListener("change", (event) => {
 
 anticiposContainer.addEventListener("click", (event) => {
   const button = event.target.closest("[data-action]");
+  const previewImage = event.target.closest("[data-preview-image]");
+
+  if (previewImage) {
+    openImagePreview(previewImage.dataset.previewImage, previewImage.alt || "Vista previa");
+    return;
+  }
+
   if (!button) {
     return;
   }
@@ -40,23 +50,38 @@ anticiposContainer.addEventListener("click", (event) => {
   }
 
   if (button.dataset.action === "approve") {
-    adminCommon.setStatus(anticiposStatus, `Anticipo de la orden ${item.orderCode} listo para validacion operativa.`);
+    handleApprove(item);
   }
 
   if (button.dataset.action === "reject") {
-    adminCommon.setStatus(anticiposStatus, `Anticipo de la orden ${item.orderCode} marcado para revision manual.`);
+    openRejectModal(item);
   }
 
-  if (button.dataset.action === "delete") {
-    adminCommon.setStatus(anticiposStatus, `Orden ${item.orderCode} marcada para depuracion administrativa.`);
-  }
-
-  if (button.dataset.action === "message-client") {
-    adminCommon.setStatus(anticiposStatus, `Mensaje preparado para ${item.cliente} sobre la orden ${item.orderCode}.`);
+  if (button.dataset.action === "delete-reference") {
+    handleDeleteReference(item);
   }
 });
 
 document.addEventListener("click", (event) => {
+  const previewClose = event.target.closest("[data-preview-close]");
+  const rejectClose = event.target.closest("[data-reject-close]");
+  const rejectSend = event.target.closest("[data-reject-send]");
+
+  if (previewClose || event.target.classList.contains("image-preview-overlay")) {
+    closeImagePreview();
+    return;
+  }
+
+  if (rejectClose || event.target.classList.contains("reject-modal-overlay")) {
+    closeRejectModal();
+    return;
+  }
+
+  if (rejectSend) {
+    handleRejectSend();
+    return;
+  }
+
   const button = event.target.closest("[data-header-action]");
   if (!button) {
     return;
@@ -89,7 +114,7 @@ async function loadAnticipos() {
 
     const orders = await response.json();
     anticipos = orders
-      .filter((order) => Boolean(order.payment_proof) || order.status === "comprado")
+      .filter((order) => Boolean(order.payment_proof) || ["comprado", "anticipo_pendiente", "rechazado"].includes(order.status))
       .map(mapAnticipoForView);
 
     renderAnticipos();
@@ -105,15 +130,21 @@ async function loadAnticipos() {
 function mapAnticipoForView(order) {
   // Esta referencia es manual y exclusiva del panel admin.
   const referenceImage = normalizeImagePath(order.reference_image, "");
+  const isApproved = order.status === "comprado";
+  const isRejected = order.status === "rechazado";
+  const similarity = isApproved ? 100 : 0;
+  const status = isApproved ? "aprobado" : (isRejected ? "rechazado" : "pendiente");
 
   return {
     id: order.id,
+    businessOrderId: order.id_orden || order.order_code || `#${order.id}`,
     orderCode: order.order_code || `#${order.id}`,
+    waId: order.wa_id || "",
     cliente: order.cliente || "Cliente sin nombre",
     whatsappProof: normalizeImagePath(order.payment_proof),
     referenceImage,
-    similarity: referenceImage ? 100 : 0,
-    status: referenceImage ? "aprobado" : "pendiente",
+    similarity,
+    status,
     total: formatCurrency(order.anticipo),
     referencia: order.producto || "Pedido personalizado"
   };
@@ -147,7 +178,7 @@ function renderAnticipos() {
           <td class="verification-order-id">${anticipo.orderCode}</td>
           <td>${anticipo.cliente}</td>
           <td>
-            <img class="verification-proof" src="${anticipo.whatsappProof}" alt="Comprobante cliente ${anticipo.orderCode}">
+            <img class="verification-proof is-clickable" src="${anticipo.whatsappProof}" alt="Comprobante cliente ${anticipo.orderCode}" data-preview-image="${anticipo.whatsappProof}">
           </td>
           <td>
             ${renderReferenceCell(anticipo)}
@@ -160,8 +191,6 @@ function renderAnticipos() {
             <div class="verification-actions">
               <button class="button primary" type="button" data-action="approve" data-id="${anticipo.id}">Aprobar</button>
               <button class="button danger" type="button" data-action="reject" data-id="${anticipo.id}">Rechazar</button>
-              <button class="button secondary" type="button" data-action="message-client" data-id="${anticipo.id}">Escribir</button>
-              <button class="button secondary" type="button" data-action="delete" data-id="${anticipo.id}">Marcar</button>
             </div>
           </td>
         </tr>
@@ -207,14 +236,15 @@ function renderAnticipos() {
         </table>
       </div>
     </article>
-  `;
+  ` + renderImagePreviewModal() + renderRejectModal();
 }
 
 function renderReferenceCell(anticipo) {
   if (anticipo.referenceImage) {
     return `
       <div class="reference-slot has-image" title="${anticipo.referencia}">
-        <img class="verification-proof" src="${anticipo.referenceImage}" alt="Referencia visual ${anticipo.orderCode}">
+        <img class="verification-proof is-clickable" src="${anticipo.referenceImage}" alt="Referencia visual ${anticipo.orderCode}" data-preview-image="${anticipo.referenceImage}">
+        <button class="reference-delete-button" type="button" data-action="delete-reference" data-id="${anticipo.id}" aria-label="Eliminar referencia">🗑</button>
       </div>
     `;
   }
@@ -271,4 +301,167 @@ async function handleSingleReferenceUpload(orderId, file) {
     uploadingReferenceIds.delete(String(orderId));
     renderAnticipos();
   }
+}
+
+function renderImagePreviewModal() {
+  if (!activePreview) {
+    return "";
+  }
+
+  return `
+    <div class="image-preview-overlay">
+      <div class="image-preview-dialog" role="dialog" aria-modal="true" aria-label="Vista ampliada de imagen">
+        <button class="preview-close-button" type="button" data-preview-close aria-label="Cerrar vista previa">×</button>
+        <img class="image-preview-full" src="${activePreview.src}" alt="${activePreview.alt}">
+      </div>
+    </div>
+  `;
+}
+
+function renderRejectModal() {
+  if (!rejectModalOrderId) {
+    return "";
+  }
+
+  const anticipo = anticipos.find((item) => String(item.id) === String(rejectModalOrderId));
+  if (!anticipo) {
+    return "";
+  }
+
+  const message = ANTICIPO_REJECT_TEMPLATE.replace("{orderId}", anticipo.businessOrderId);
+
+  return `
+    <div class="reject-modal-overlay">
+      <div class="reject-modal-card" role="dialog" aria-modal="true" aria-label="Mensaje de rechazo de anticipo">
+        <button class="preview-close-button" type="button" data-reject-close aria-label="Cerrar mensaje">×</button>
+        <h4>Rechazo de anticipo</h4>
+        <p>${message}</p>
+        <div class="reject-modal-actions">
+          <button class="button primary" type="button" data-reject-send>Enviar</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function openImagePreview(src, alt) {
+  activePreview = { src, alt };
+  renderAnticipos();
+}
+
+function closeImagePreview() {
+  if (!activePreview) {
+    return;
+  }
+
+  activePreview = null;
+  renderAnticipos();
+}
+
+function openRejectModal(anticipo) {
+  rejectModalOrderId = anticipo.id;
+  renderAnticipos();
+}
+
+function closeRejectModal() {
+  if (!rejectModalOrderId) {
+    return;
+  }
+
+  rejectModalOrderId = null;
+  renderAnticipos();
+}
+
+async function handleApprove(anticipo) {
+  if (!anticipo.referenceImage) {
+    adminCommon.setStatus(anticiposStatus, `Debes subir una referencia para la orden ${anticipo.orderCode} antes de aprobarla.`);
+    return;
+  }
+
+  try {
+    const response = await fetch(`/api/admin/orders/${anticipo.id}/approve-anticipo`, {
+      method: "POST",
+      headers: {
+        Accept: "application/json"
+      }
+    });
+
+    if (!response.ok) {
+      throw await buildRequestError(response);
+    }
+
+    adminCommon.setStatus(anticiposStatus, `Anticipo de la orden ${anticipo.orderCode} aprobado con 100% de validacion.`);
+    await loadAnticipos();
+  } catch (error) {
+    console.error("No fue posible aprobar el anticipo", error);
+    adminCommon.setStatus(anticiposStatus, `No fue posible aprobar la orden ${anticipo.orderCode}: ${error.message}`);
+  }
+}
+
+async function handleDeleteReference(anticipo) {
+  try {
+    const response = await fetch(`/api/admin/orders/${anticipo.id}/reference-image`, {
+      method: "DELETE",
+      headers: {
+        Accept: "application/json"
+      }
+    });
+
+    if (!response.ok) {
+      throw await buildRequestError(response);
+    }
+
+    adminCommon.setStatus(anticiposStatus, `Referencia eliminada para la orden ${anticipo.orderCode}.`);
+    await loadAnticipos();
+  } catch (error) {
+    console.error("No fue posible eliminar la referencia", error);
+    adminCommon.setStatus(anticiposStatus, `No fue posible eliminar la referencia de la orden ${anticipo.orderCode}: ${error.message}`);
+  }
+}
+
+async function handleRejectSend() {
+  const anticipo = anticipos.find((item) => String(item.id) === String(rejectModalOrderId));
+  if (!anticipo) {
+    closeRejectModal();
+    return;
+  }
+
+  try {
+    const response = await fetch(`/api/admin/orders/${anticipo.id}/reject-anticipo`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json"
+      },
+      body: JSON.stringify({
+        message: ANTICIPO_REJECT_TEMPLATE.replace("{orderId}", anticipo.businessOrderId)
+      })
+    });
+
+    if (!response.ok) {
+      throw await buildRequestError(response);
+    }
+
+    closeRejectModal();
+    adminCommon.setStatus(anticiposStatus, `Mensaje enviado a ${anticipo.cliente} y anticipo rechazado para la orden ${anticipo.orderCode}.`);
+    await loadAnticipos();
+  } catch (error) {
+    console.error("No fue posible rechazar el anticipo", error);
+    adminCommon.setStatus(anticiposStatus, `No fue posible enviar el rechazo de la orden ${anticipo.orderCode}: ${error.message}`);
+  }
+}
+
+async function buildRequestError(response) {
+  let message = `HTTP ${response.status}`;
+
+  try {
+    const payload = await response.json();
+    if (payload.error) {
+      message = payload.error;
+    }
+  } catch (error) {
+    console.error("No fue posible leer la respuesta del servidor", error);
+  }
+
+  return new Error(message);
 }

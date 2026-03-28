@@ -116,11 +116,31 @@ function mapWorkflowStatus(status) {
 
   if (status === "comprado") {
     return {
-      fase1: false,
-      fase2: true,
+      fase1: true,
+      fase2: false,
       fase3: false,
       fase4: false,
-      statusLabel: "en-produccion"
+      statusLabel: "aprobado"
+    };
+  }
+
+  if (status === "anticipo_pendiente") {
+    return {
+      fase1: false,
+      fase2: false,
+      fase3: false,
+      fase4: false,
+      statusLabel: "anticipo-pendiente"
+    };
+  }
+
+  if (status === "rechazado") {
+    return {
+      fase1: false,
+      fase2: false,
+      fase3: false,
+      fase4: false,
+      statusLabel: "rechazado"
     };
   }
 
@@ -201,7 +221,7 @@ function renderFase1() {
           <div class="record-main">
             <div class="record-title-row">
               <h4 class="record-title">Orden ${orden.orderCode} · ${orden.producto}</h4>
-              <span class="status-badge ${orden.assigned ? "aprobado" : "pendiente"}">${orden.assigned ? "asignado" : "no asignado"}</span>
+              <span class="status-badge ${adminCommon.normalizeStatusClass(orden.workflow.statusLabel)}">${adminCommon.formatStatus(orden.workflow.statusLabel)}</span>
             </div>
             <span class="record-meta">Cliente: ${orden.cliente} · Precio: ${orden.price}</span>
             <div class="inline-metrics">
@@ -229,7 +249,7 @@ function renderFase1() {
       <div class="section-topline">
         <div>
           <h4>Pre-asignacion</h4>
-          <span class="mini-copy">Ordenes cotizadas listas para ser movidas a produccion.</span>
+          <span class="mini-copy">Aqui aparecen las ordenes cotizadas y tambien los anticipos ya aprobados desde validacion.</span>
         </div>
         <div class="filter-row">
           <label class="filter-chip"><input type="checkbox" data-filter="conFecha" ${ordenesFiltros.conFecha ? "checked" : ""}> Con fecha</label>
