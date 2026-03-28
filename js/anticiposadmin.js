@@ -240,34 +240,35 @@ async function handleSingleReferenceUpload(orderId, file) {
   renderAnticipos();
 
   try {
-    // Envia una sola imagen y la amarra a la orden seleccionada.
+    // Envia una sola imagen al endpoint explicito del pedido y la persiste en BD.
     const formData = new FormData();
-    formData.append("order_id", String(orderId));
-    formData.append("reference_image", file);
+    formData.append("foto", file);
 
-    const response = await fetch("/api/admin/orders/reference-image", {
+    const response = await fetch(`/api/upload-reference/${orderId}`, {
       method: "POST",
       body: formData
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
+      let message = `HTTP ${response.status}`;
+      try {
+        const payload = await response.json();
+        if (payload.error) {
+          message = payload.error;
+        }
+      } catch (parseError) {
+        console.error("No fue posible leer el error de subida", parseError);
+      }
+      throw new Error(message);
     }
 
-    const updatedOrder = await response.json();
-    updateAnticipoFromOrder(updatedOrder);
-    adminCommon.setStatus(anticiposStatus, `Referencia cargada para la orden ${anticipo.orderCode}.`);
+    adminCommon.setStatus(anticiposStatus, `Referencia cargada para la orden ${anticipo.orderCode}. Recargando datos...`);
+    await loadAnticipos();
   } catch (error) {
     console.error("No fue posible subir la referencia", error);
-    adminCommon.setStatus(anticiposStatus, `No fue posible subir la referencia para la orden ${anticipo.orderCode}.`);
+    adminCommon.setStatus(anticiposStatus, `No fue posible subir la referencia para la orden ${anticipo.orderCode}: ${error.message}`);
   } finally {
     uploadingReferenceIds.delete(String(orderId));
     renderAnticipos();
   }
-}
-
-function updateAnticipoFromOrder(order) {
-  // Reemplaza la fila actual con la respuesta mas reciente del backend.
-  const updatedAnticipo = mapAnticipoForView(order);
-  anticipos = anticipos.map((item) => (String(item.id) === String(order.id) ? updatedAnticipo : item));
 }
