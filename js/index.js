@@ -1,8 +1,7 @@
 const searchInput = document.getElementById("productSearch");
 const searchButton = document.getElementById("searchButton");
 const searchResults = document.getElementById("searchResults");
-const productCards = Array.from(document.querySelectorAll(".card[data-product-name]"));
-const addButtons = document.querySelectorAll(".add-to-cart");
+const publicProductGrid = document.getElementById("publicProductGrid");
 const cartItemsContainer = document.getElementById("cartItems");
 const cartTotalElement = document.getElementById("cartTotal");
 const heroCartTotal = document.getElementById("heroCartTotal");
@@ -16,6 +15,7 @@ const heroDescription = document.querySelector(".hero-content > p");
 const heroButtons = document.querySelectorAll(".cta a, .cta button");
 
 let selectedSearchIndex = -1;
+let productCards = [];
 
 function formatCurrency(value) {
   return new Intl.NumberFormat("es-CO", {
@@ -42,6 +42,14 @@ function getMatchingCards(term) {
   return productCards.filter((card) =>
     normalizeText(card.dataset.productName).includes(normalizedTerm)
   );
+}
+
+function normalizeImagePath(path) {
+  if (!path) {
+    return "images/products/top.jpg";
+  }
+
+  return path.replace(/\\/g, "/").replace(/^\.\//, "");
 }
 
 function focusCard(card) {
@@ -105,6 +113,83 @@ function filterProducts() {
   });
 
   renderSearchResults(matches);
+}
+
+function renderPublicProducts(products) {
+  publicProductGrid.innerHTML = "";
+
+  if (!products.length) {
+    publicProductGrid.innerHTML = `
+      <article class="card">
+        <h3>Catalogo en actualizacion</h3>
+        <p>Pronto veras aqui los tejidos activos publicados por nuestras tejedoras.</p>
+      </article>
+    `;
+    productCards = [];
+    return;
+  }
+
+  products.forEach((product) => {
+    const card = document.createElement("article");
+    card.className = "card";
+    card.dataset.productName = product.name;
+    card.innerHTML = `
+      <img src="${normalizeImagePath(product.image_path)}" alt="${product.name}">
+      <h3>${product.name}</h3>
+      <p>${formatCurrency(product.price)}</p>
+      <button
+        class="add-to-cart"
+        type="button"
+        data-product-id="producto-${product.id}"
+        data-product-name="${product.name}"
+        data-product-price="${product.price}"
+        data-product-image="${normalizeImagePath(product.image_path)}"
+      >
+        Anadir al carrito
+      </button>
+    `;
+    publicProductGrid.appendChild(card);
+  });
+
+  productCards = Array.from(document.querySelectorAll(".card[data-product-name]"));
+
+  publicProductGrid.querySelectorAll(".add-to-cart").forEach((button) => {
+    button.addEventListener("click", () => {
+      window.EWCart.addItem({
+        id: button.dataset.productId,
+        name: button.dataset.productName,
+        price: Number(button.dataset.productPrice),
+        image: button.dataset.productImage
+      });
+    });
+  });
+
+  productCards.forEach((card) => {
+    card.addEventListener("click", () => {
+      productCards.forEach((item) => item.classList.remove("active"));
+      card.classList.add("active");
+    });
+  });
+}
+
+async function loadPublicProducts() {
+  try {
+    const response = await fetch("/api/public/productos", {
+      headers: {
+        Accept: "application/json"
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const products = await response.json();
+    renderPublicProducts(products);
+  } catch (error) {
+    console.error("No fue posible cargar el catalogo publico", error);
+    renderPublicProducts([]);
+  }
 }
 
 function handleSearchAction() {
@@ -196,24 +281,6 @@ function animateHero() {
   });
 }
 
-addButtons.forEach((button) => {
-  button.addEventListener("click", () => {
-    window.EWCart.addItem({
-      id: button.dataset.productId,
-      name: button.dataset.productName,
-      price: Number(button.dataset.productPrice),
-      image: button.dataset.productImage
-    });
-  });
-});
-
-productCards.forEach((card) => {
-  card.addEventListener("click", () => {
-    productCards.forEach((item) => item.classList.remove("active"));
-    card.classList.add("active");
-  });
-});
-
 searchInput.addEventListener("input", () => {
   selectedSearchIndex = -1;
   filterProducts();
@@ -282,3 +349,4 @@ window.addEventListener("ew:cart-updated", renderCart);
 window.EWCart.syncCounters();
 renderCart();
 animateHero();
+loadPublicProducts();

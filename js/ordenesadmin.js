@@ -88,13 +88,18 @@ function mapOrderForView(order) {
     orderCode: order.order_code || `#${order.id}`,
     cliente: order.cliente || "Cliente sin nombre",
     producto: order.producto || "Producto personalizado",
+    productImage: normalizeImagePath(order.product_image),
+    lengthCm: order.length_cm || "Sin dato",
+    widthCm: order.width_cm || "Sin dato",
+    description: order.description || "Sin descripcion",
     fecha: order.fecha || "",
     fechaHora: order.fecha_hora || "Sin fecha",
-    assigned: false,
-    weaver: "Sin asignar",
+    deadline: order.deadline || "",
+    assigned: Boolean(order.assigned),
+    weaver: order.weaver || order.assigned_to || "Sin asignar",
     price: formatCurrency(order.cotizacion_max || order.cotizacion_min),
     startDate: order.fecha || "Pendiente",
-    deliveryDate: "Por definir",
+    deliveryDate: order.deadline || "Por definir",
     paymentProof: normalizeImagePath(order.payment_proof),
     amount: formatCurrency(order.anticipo),
     checklist: order.description || "Pendiente checklist final",
@@ -208,7 +213,7 @@ function renderFase1() {
   const fase1Ordenes = ordenes
     .filter((orden) => orden.workflow.fase1)
     .filter((orden) => {
-      const hasDate = Boolean(orden.fecha);
+      const hasDate = Boolean(orden.deadline);
       const matchesDate = hasDate ? ordenesFiltros.conFecha : ordenesFiltros.sinFecha;
       const matchesAssigned = orden.assigned ? ordenesFiltros.asignado : ordenesFiltros.noAsignado;
       return matchesDate && matchesAssigned;
@@ -225,17 +230,22 @@ function renderFase1() {
             </div>
             <span class="record-meta">Cliente: ${orden.cliente} · Precio: ${orden.price}</span>
             <div class="inline-metrics">
-              <span class="filter-chip">Fecha: ${orden.fecha || "Sin fecha"}</span>
+              <span class="filter-chip">Entrega: ${orden.deadline || "Sin fecha"}</span>
               <span class="filter-chip">Tejedor: ${orden.weaver}</span>
+              <span class="filter-chip">Largo: ${orden.lengthCm}</span>
+              <span class="filter-chip">Ancho: ${orden.widthCm}</span>
             </div>
+            <span class="muted">${orden.description}</span>
           </div>
           <div class="record-side">
-            <div class="action-row">
-              <button class="button primary" type="button" data-action="assign" data-id="${orden.id}">Asignar tejedor</button>
-              <button class="button secondary" type="button" data-action="edit-date" data-id="${orden.id}">Editar fecha</button>
+            <div class="evidence-card">
+              <span class="evidence-label">Referencia del pedido</span>
+              <img class="evidence-image" src="${orden.productImage}" alt="Producto ${orden.orderCode}">
             </div>
           </div>
           <div class="record-actions">
+            <button class="button primary" type="button" data-action="assign" data-id="${orden.id}">Asignar tejedor</button>
+            <button class="button secondary" type="button" data-action="edit-date" data-id="${orden.id}">Editar fecha</button>
             <button class="button secondary" type="button" data-action="message-weaver" data-id="${orden.id}">Escribir a tejedores</button>
             <button class="button secondary" type="button" data-action="message-client" data-id="${orden.id}">Escribir al cliente</button>
           </div>
@@ -249,11 +259,11 @@ function renderFase1() {
       <div class="section-topline">
         <div>
           <h4>Pre-asignacion</h4>
-          <span class="mini-copy">Aqui aparecen las ordenes cotizadas y tambien los anticipos ya aprobados desde validacion.</span>
+          <span class="mini-copy">Aqui aparecen las ordenes cotizadas y tambien los anticipos ya aprobados desde validacion. Los filtros usan la fecha de entrega guardada en la base de datos.</span>
         </div>
         <div class="filter-row">
-          <label class="filter-chip"><input type="checkbox" data-filter="conFecha" ${ordenesFiltros.conFecha ? "checked" : ""}> Con fecha</label>
-          <label class="filter-chip"><input type="checkbox" data-filter="sinFecha" ${ordenesFiltros.sinFecha ? "checked" : ""}> Sin fecha</label>
+          <label class="filter-chip"><input type="checkbox" data-filter="conFecha" ${ordenesFiltros.conFecha ? "checked" : ""}> Con fecha de entrega</label>
+          <label class="filter-chip"><input type="checkbox" data-filter="sinFecha" ${ordenesFiltros.sinFecha ? "checked" : ""}> Sin fecha de entrega</label>
           <label class="filter-chip"><input type="checkbox" data-filter="asignado" ${ordenesFiltros.asignado ? "checked" : ""}> Asignado</label>
           <label class="filter-chip"><input type="checkbox" data-filter="noAsignado" ${ordenesFiltros.noAsignado ? "checked" : ""}> No asignado</label>
         </div>
