@@ -13,7 +13,13 @@ basesTabs.forEach((tab) => {
     basesTabs.forEach((item) => item.classList.remove("active"));
     tab.classList.add("active");
     basesTabActual = tab.dataset.tab;
-    renderBasesTab();
+    
+    // Si es la pestaña de productos, llamar a la función del módulo de productos
+    if (basesTabActual === "productos" && typeof loadAndRenderProductos === "function") {
+      loadAndRenderProductos();
+    } else {
+      renderBasesTab();
+    }
   });
 });
 
