@@ -62,23 +62,59 @@ document.addEventListener('DOMContentLoaded', () => {
 async function loadAndRenderProductos() {
   try {
     updateStatus('Cargando productos...');
+    console.clear(); // Limpiar consola para facilitar debugging
+    console.log('='.repeat(60));
+    console.log('🔄 Iniciando carga de productos...');
+    console.log('='.repeat(60));
     
-    // Cargar datos de ambas fuentes en paralelo
+    // Cargar datos de ambas fuentes EN PARALELO (pero cada una maneja sus propios errores)
     const [clientOrders, weaverProducts] = await Promise.all([
-      loadClientOrders(),
-      loadWeaverProducts()
+      loadClientOrders().catch(err => {
+        console.error('⚠️ Falla al cargar órdenes de clientes:', err);
+        return [];
+      }),
+      loadWeaverProducts().catch(err => {
+        console.error('⚠️ Falla al cargar productos de tejedores:', err);
+        return [];
+      })
     ]);
     
-    // Combinar datos
-    productosState.allProducts = combineProductData(clientOrders, weaverProducts);
+    console.log('📊 Resumen de carga:');
+    console.log(`  • Órdenes de clientes: ${clientOrders.length}`);
+    console.log(`  • Productos de tejedores: ${weaverProducts.length}`);
+    
+    // Si ambas fallan, mostrar estado especial
+    if (clientOrders.length === 0 && weaverProducts.length === 0) {
+      console.warn('⚠️ No se cargaron datos de ninguna fuente');
+      updateStatus('⚠️ Sin datos: Verifica la consola (F12) para errores');
+      renderEmptyState('No se pudieron cargar productos. Revisa la consola para detalles.');
+      return;
+    }
+    
+    // Combinar y procesar datos (con manejo de errores)
+    let allProducts = [];
+    try {
+      allProducts = combineProductData(clientOrders, weaverProducts);
+      console.info(`✅ ${allProducts.length} productos combinados y procesados`);
+    } catch (combineError) {
+      console.error('❌ Error al combinar datos:', combineError);
+      updateStatus('❌ Error procesando datos');
+      renderEmptyState('Error al procesar los datos. Verifica la consola.');
+      return;
+    }
+    
+    productosState.allProducts = allProducts;
     productosState.filteredProducts = [...productosState.allProducts];
     
     renderTableAndFilters();
-    updateStatus(`${productosState.allProducts.length} productos cargados (${clientOrders.length} pedidos + ${weaverProducts.length} creaciones)`);
+    const totalText = `${productosState.allProducts.length} productos (${clientOrders.length} pedidos + ${weaverProducts.length} creaciones)`;
+    updateStatus(`✅ ${totalText}`);
+    console.info(`✅ Renderizado completado: ${totalText}`);
+    console.log('='.repeat(60));
   } catch (error) {
-    console.error('Error cargando productos:', error);
-    updateStatus('Error al cargar productos');
-    renderEmptyState('No fue posible cargar los productos');
+    console.error('❌ Error fatal al cargar productos:', error);
+    updateStatus('❌ Error fatal al cargar productos');
+    renderEmptyState('Error inesperado. Verifica la consola (F12) para más detalles.');
   }
 }
 
@@ -88,19 +124,54 @@ async function loadClientOrders() {
       headers: { Accept: 'application/json' }
     });
     
-    if (!response.ok && response.status !== 404) {
-      throw new Error(`HTTP ${response.status}`);
+    // Validar que sea JSON y no redirección HTML
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      console.warn(`❌ /api/orders: Content-Type inválido: ${contentType}`);
+      return [];
     }
     
-    if (response.status === 404) return [];
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        console.warn('⚠️ /api/orders: Problema de autenticación. Vista previa de respuesta:');
+      }
+      console.warn(`❌ /api/orders: HTTP ${response.status}`);
+      return [];
+    }
     
-    const orders = await response.json();
-    if (!Array.isArray(orders)) return [];
+    let orders;
+    try {
+      orders = await response.json();
+    } catch (parseError) {
+      console.error('❌ /api/orders: No es JSON válido', parseError);
+      return [];
+    }
+    
+    if (!Array.isArray(orders)) {
+      console.warn('⚠️ /api/orders: No devolvió array, devolvió:', typeof orders, orders);
+      return [];
+    }
+    
+    if (orders.length === 0) {
+      console.info('ℹ️ /api/orders: Array vacío (normal si no hay órdenes)');
+      return [];
+    }
+    
+    // Validar estructura de primeros elementos
+    const firstOrder = orders[0];
+    const expectedFields = ['id_orden', 'product_name', 'cotizacion_min', 'cotizacion_max'];
+    const missingFields = expectedFields.filter(f => !(f in firstOrder));
+    
+    if (missingFields.length > 0) {
+      console.warn('⚠️ /api/orders: Campos faltantes en respuesta:', missingFields, 'Primera orden:', firstOrder);
+    } else {
+      console.info(`✅ /api/orders: ${orders.length} órdenes cargadas correctamente`);
+    }
     
     // Filtrar solo órdenes que tienen información de producto
     return orders.filter(order => order.product_name || order.product_image);
   } catch (error) {
-    console.error('Error cargando órdenes de clientes:', error);
+    console.error('❌ Error cargando órdenes de clientes:', error);
     return [];
   }
 }
@@ -111,79 +182,150 @@ async function loadWeaverProducts() {
       headers: { Accept: 'application/json' }
     });
     
-    if (!response.ok && response.status !== 404) {
-      throw new Error(`HTTP ${response.status}`);
+    // Validar que sea JSON y no HTML de redirección de login
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      console.warn(`❌ /api/productos: Content-Type inválido: ${contentType} (probablemente redirige a login)`);
+      console.warn('💡 Posible causa: Sesión expirada o no autenticado. Verifica que estés logueado.');
+      return [];
     }
     
-    if (response.status === 404) return [];
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        console.warn('⚠️ /api/productos: Autenticación requerida (HTTP', response.status, ')');
+        console.warn('💡 Solución: Asegúrate de estar logueado en el panel de administración');
+      } else {
+        console.warn(`❌ /api/productos: HTTP ${response.status}`);
+      }
+      return [];
+    }
     
-    const products = await response.json();
-    return Array.isArray(products) ? products : [];
+    let products;
+    try {
+      products = await response.json();
+    } catch (parseError) {
+      console.error('❌ /api/productos: No es JSON válido', parseError);
+      console.warn('💡 Respuesta probablemente HTML (error de servidor o redirección)');
+      return [];
+    }
+    
+    if (!Array.isArray(products)) {
+      console.warn('⚠️ /api/productos: No devolvió array, devolvió:', typeof products);
+      return [];
+    }
+    
+    if (products.length === 0) {
+      console.info('ℹ️ /api/productos: Array vacío (normal si tejedores no añadieron productos)');
+      return [];
+    }
+    
+    // Validar estructura
+    const firstProduct = products[0];
+    const expectedFields = ['id', 'name', 'price', 'owner_username'];
+    const missingFields = expectedFields.filter(f => !(f in firstProduct));
+    
+    if (missingFields.length > 0) {
+      console.warn('⚠️ /api/productos: Campos faltantes en respuesta:', missingFields, 'Primer producto:', firstProduct);
+    } else {
+      console.info(`✅ /api/productos: ${products.length} productos cargados correctamente`);
+    }
+    
+    return products;
   } catch (error) {
-    console.error('Error cargando productos de tejedores:', error);
+    console.error('❌ Error cargando productos de tejedores:', error);
+    console.warn('💡 Si ves "Failed to fetch", puede ser CORS o servidor caído');
     return [];
   }
 }
 
 function combineProductData(clientOrders, weaverProducts) {
   const combined = [];
+  let ordersProcessed = 0;
+  let ordersSkipped = 0;
+  let productsProcessed = 0;
   
   // Agregar órdenes de clientes como productos
-  clientOrders.forEach(order => {
-    // Mapear campos del servidor (que usa to_admin_dict())
-    // quote_min → cotizacion_min, quote_max → cotizacion_max, etc.
-    const mappedOrder = {
-      ...order,
-      // Mapear nombres renombrados por to_admin_dict() de vuelta a nombres esperados
-      quote_min: order.cotizacion_min || order.quote_min,
-      quote_max: order.cotizacion_max || order.quote_max,
-      advance_payment: order.anticipo || order.advance_payment,
-      assigned_to: order.weaver || order.assigned_to,
-      order_code: order.order_code || '',
-      created_at: order.fecha_hora ? new Date(order.fecha_hora).toISOString() : new Date().toISOString()
-    };
-    
-    combined.push({
-      id: mappedOrder.id_orden || mappedOrder.id,
-      productId: mappedOrder.id_orden,
-      name: mappedOrder.product_name || 'Producto sin nombre',
-      category: mappedOrder.producto?.split(' / ')[0] || mappedOrder.product_type || 'Personalizado',
-      price: mappedOrder.quote_max || mappedOrder.quote_min || 0,
-      priceMin: mappedOrder.quote_min || 0,
-      priceMax: mappedOrder.quote_max || 0,
-      image: mappedOrder.product_image,
-      images: mappedOrder.product_image ? [mappedOrder.product_image] : [],
-      source: 'cliente',
-      colors: mappedOrder.colors || '',
-      measurements: `${mappedOrder.length_cm || '?'} x ${mappedOrder.width_cm || '?'} cm`,
-      description: mappedOrder.description || '',
-      orders: mappedOrder.order_code ? [mappedOrder.order_code] : [],
-      fullData: mappedOrder,
-      created: mappedOrder.created_at || new Date().toISOString()
-    });
+  clientOrders.forEach((order, index) => {
+    try {
+      // Mapear nombres de campos: to_admin_dict() devuelve campos renombrados
+      // Este mapeo es DEFENSIVO: intenta con el nombre renombrado primero, luego cae a backup
+      const mappedOrder = {
+        // Campos originales/de to_admin_dict()
+        ...order,
+        // Mapeo DEFENSIVO: si vienen renombrados (cotizacion_min), usarlos; si no, usar nombres originales
+        quote_min: order.cotizacion_min !== undefined ? order.cotizacion_min : (order.quote_min || 0),
+        quote_max: order.cotizacion_max !== undefined ? order.cotizacion_max : (order.quote_max || 0),
+        advance_payment: order.anticipo !== undefined ? order.anticipo : (order.advance_payment || 0),
+        assigned_to: order.weaver || order.assigned_to || null
+      };
+      
+      // Validar que tenga al menos un nombre de producto
+      if (!mappedOrder.product_name && !mappedOrder.product_image) {
+        console.warn(`  ⚠️ Orden ${mappedOrder.id_orden} sin product_name ni product_image, omitida`);
+        ordersSkipped++;
+        return;
+      }
+      
+      const productItem = {
+        id: mappedOrder.id_orden || `O-${mappedOrder.id}`,
+        productId: mappedOrder.id_orden,
+        name: mappedOrder.product_name || 'Producto sin nombre',
+        category: mappedOrder.producto 
+          ? (mappedOrder.producto.split(' / ')[0] || mappedOrder.product_type || 'Personalizado')
+          : (mappedOrder.product_type || 'Personalizado'),
+        price: mappedOrder.quote_max || mappedOrder.quote_min || 0,
+        priceMin: mappedOrder.quote_min || 0,
+        priceMax: mappedOrder.quote_max || 0,
+        image: mappedOrder.product_image || null,
+        images: mappedOrder.product_image ? [mappedOrder.product_image] : [],
+        source: 'cliente',
+        colors: mappedOrder.colors || '',
+        measurements: `${mappedOrder.length_cm || '?'} x ${mappedOrder.width_cm || '?'} cm`,
+        description: mappedOrder.description || '',
+        orders: mappedOrder.order_code ? [mappedOrder.order_code] : [],
+        fullData: mappedOrder,
+        created: mappedOrder.created_at || mappedOrder.fecha_hora || new Date().toISOString()
+      };
+      
+      combined.push(productItem);
+      ordersProcessed++;
+    } catch (orderError) {
+      console.warn(`  ❌ Error procesando orden índice ${index}:`, orderError);
+      ordersSkipped++;
+    }
   });
   
   // Agregar productos de tejedores
-  weaverProducts.forEach(product => {
-    combined.push({
-      id: `P-${String(product.id).padStart(5, '0')}`,
-      productId: product.id,
-      name: product.name || 'Producto sin nombre',
-      category: product.category || 'General',
-      price: product.price || 0,
-      priceMin: product.price || 0,
-      priceMax: product.price || 0,
-      image: product.image_path,
-      images: product.image_path ? [product.image_path] : [],
-      source: 'tejedor',
-      colors: '',
-      measurements: '',
-      description: '',
-      orders: [],
-      fullData: product,
-      created: product.created_at || new Date().toISOString()
-    });
+  weaverProducts.forEach((product, index) => {
+    try {
+      const productItem = {
+        id: `P-${String(product.id).padStart(5, '0')}`,
+        productId: product.id,
+        name: product.name || 'Producto sin nombre',
+        category: product.category || 'General',
+        price: product.price || 0,
+        priceMin: product.price || 0,
+        priceMax: product.price || 0,
+        image: product.image_path || null,
+        images: product.image_path ? [product.image_path] : [],
+        source: 'tejedor',
+        colors: '',
+        measurements: '',
+        description: '',
+        orders: [],
+        fullData: product,
+        created: product.created_at || new Date().toISOString()
+      };
+      
+      combined.push(productItem);
+      productsProcessed++;
+    } catch (productError) {
+      console.warn(`  ❌ Error procesando producto índice ${index}:`, productError);
+    }
   });
+  
+  console.info(`  ✅ Órdenes procesadas: ${ordersProcessed} (${ordersSkipped} omitidas)`);
+  console.info(`  ✅ Productos de tejedores: ${productsProcessed}`);
   
   return combined;
 }
@@ -982,36 +1124,62 @@ function escapeHtml(text) {
 function normalizeImagePath(path) {
   if (!path) return '';
   
+  const originalPath = path;
+  
   // Si ya es una URL válida absoluta, devolverla como está
   if (path.startsWith('http://') || path.startsWith('https://')) {
     return path;
   }
   
-  // Si es ruta absoluta con /, devolverla como está
+  // Si ya es ruta absoluta desde raíz (/), devolverla como está 
+  // (asume que ya está completa)
   if (path.startsWith('/')) {
     return path;
   }
   
-  // Para rutas relativas como "img/..." o "products/...", intentar cargar desde /static/ primero
-  // Si la imagen viene de whatsapp_utils, debe estar en /static/img/
-  // Si viene de productos de tejedores, puede estar en /static/products/ o similar
+  // CASOS RELATIVOS: rutas relativas que necesitan /static/ como prefijo
+  // Identificar el tipo de imagen por el prefijo
+  let resolved = path;
   
-  // Caso especial: si empieza con "img/", es de whatsapp_utils
+  // Órdenes de WhatsApp - imágenes del bot
   if (path.startsWith('img/')) {
-    return `/static/${path}`;
+    resolved = `/static/${path}`;
+    console.debug(`  🖼️  Imagen WhatsApp: ${originalPath} → ${resolved}`);
+    return resolved;
   }
   
-  // Caso especial: si empieza con "productos/", es del catalogo de tejedores
-  if (path.startsWith('productos/') || path.startsWith('comprobante/') || path.startsWith('ordenes/')) {
-    return `/static/${path}`;
+  // Productos de tejedores - catálogo
+  if (path.startsWith('productos/')) {
+    resolved = `/static/${path}`;
+    console.debug(`  🖼️  Imagen Tejedor: ${originalPath} → ${resolved}`);
+    return resolved;
   }
   
-  // Por defecto, agregar /static/ si no comienza con /
-  if (!path.startsWith('/')) {
-    return `/static/${path}`;
+  // Comprobante de pago
+  if (path.startsWith('comprobante/')) {
+    resolved = `/static/${path}`;
+    console.debug(`  🖼️  Comprobante: ${originalPath} → ${resolved}`);
+    return resolved;
   }
   
-  return path;
+  // Órdenes (archivos relacionados)
+  if (path.startsWith('ordenes/')) {
+    resolved = `/static/${path}`;
+    console.debug(`  🖼️  Orden: ${originalPath} → ${resolved}`);
+    return resolved;
+  }
+  
+  // Referencias (imágenes de referencia cargadas manualmente)
+  if (path.startsWith('img/referencias/')) {
+    resolved = `/static/${path}`;
+    console.debug(`  🖼️  Referencia: ${originalPath} → ${resolved}`);
+    return resolved;
+  }
+  
+  // Por DEFECTO: esto no debería pasar, pero como fallback agregamos /static/
+  resolved = `/static/${path}`;
+  console.warn(`  ⚠️  Ruta no reconocida, usando fallback: ${originalPath} → ${resolved}`);
+  return resolved;
 }
 
 function formatNumber(num) {
