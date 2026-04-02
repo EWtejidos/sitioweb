@@ -130,23 +130,36 @@ function combineProductData(clientOrders, weaverProducts) {
   
   // Agregar órdenes de clientes como productos
   clientOrders.forEach(order => {
+    // Mapear campos del servidor (que usa to_admin_dict())
+    // quote_min → cotizacion_min, quote_max → cotizacion_max, etc.
+    const mappedOrder = {
+      ...order,
+      // Mapear nombres renombrados por to_admin_dict() de vuelta a nombres esperados
+      quote_min: order.cotizacion_min || order.quote_min,
+      quote_max: order.cotizacion_max || order.quote_max,
+      advance_payment: order.anticipo || order.advance_payment,
+      assigned_to: order.weaver || order.assigned_to,
+      order_code: order.order_code || '',
+      created_at: order.fecha_hora ? new Date(order.fecha_hora).toISOString() : new Date().toISOString()
+    };
+    
     combined.push({
-      id: order.id_orden || order.id,
-      productId: order.id_orden,
-      name: order.product_name || 'Producto sin nombre',
-      category: order.product_type || 'Personalizado',
-      price: order.quote_max || order.quote_min || 0,
-      priceMin: order.quote_min || 0,
-      priceMax: order.quote_max || 0,
-      image: order.product_image,
-      images: order.product_image ? [order.product_image] : [],
+      id: mappedOrder.id_orden || mappedOrder.id,
+      productId: mappedOrder.id_orden,
+      name: mappedOrder.product_name || 'Producto sin nombre',
+      category: mappedOrder.producto?.split(' / ')[0] || mappedOrder.product_type || 'Personalizado',
+      price: mappedOrder.quote_max || mappedOrder.quote_min || 0,
+      priceMin: mappedOrder.quote_min || 0,
+      priceMax: mappedOrder.quote_max || 0,
+      image: mappedOrder.product_image,
+      images: mappedOrder.product_image ? [mappedOrder.product_image] : [],
       source: 'cliente',
-      colors: order.colors || '',
-      measurements: `${order.length_cm || '?'} x ${order.width_cm || '?'} cm`,
-      description: order.description || '',
-      orders: [order.order_code || ''],
-      fullData: order,
-      created: order.created_at || new Date().toISOString()
+      colors: mappedOrder.colors || '',
+      measurements: `${mappedOrder.length_cm || '?'} x ${mappedOrder.width_cm || '?'} cm`,
+      description: mappedOrder.description || '',
+      orders: mappedOrder.order_code ? [mappedOrder.order_code] : [],
+      fullData: mappedOrder,
+      created: mappedOrder.created_at || new Date().toISOString()
     });
   });
   
@@ -904,14 +917,18 @@ function exportToCSV() {
     p.orders.length
   ]);
   
-  // Construir CSV
+  // Construir CSV con BOM UTF-8 para compatibilidad con Excel
+  // BOM (Byte Order Mark) es necesario para que Excel reconozca el encoding correcto
   const csvContent = [
     headers.map(h => `"${h}"`).join(','),
     ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
   ].join('\n');
   
+  // Agregar BOM UTF-8: \uFEFF es el carácter BOM en Unicode
+  const csvWithBOM = '\uFEFF' + csvContent;
+  
   // Descargar
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const blob = new Blob([csvWithBOM], { type: 'text/csv;charset=utf-8' });
   const link = document.createElement('a');
   const url = URL.createObjectURL(blob);
   
@@ -964,14 +981,36 @@ function escapeHtml(text) {
 
 function normalizeImagePath(path) {
   if (!path) return '';
-  // Si ya es una URL válida, devolverla como está
-  if (path.startsWith('http') || path.startsWith('https')) {
+  
+  // Si ya es una URL válida absoluta, devolverla como está
+  if (path.startsWith('http://') || path.startsWith('https://')) {
     return path;
   }
-  // Si es una ruta relativa, agregarla con /static si es necesario
+  
+  // Si es ruta absoluta con /, devolverla como está
+  if (path.startsWith('/')) {
+    return path;
+  }
+  
+  // Para rutas relativas como "img/..." o "products/...", intentar cargar desde /static/ primero
+  // Si la imagen viene de whatsapp_utils, debe estar en /static/img/
+  // Si viene de productos de tejedores, puede estar en /static/products/ o similar
+  
+  // Caso especial: si empieza con "img/", es de whatsapp_utils
+  if (path.startsWith('img/')) {
+    return `/static/${path}`;
+  }
+  
+  // Caso especial: si empieza con "productos/", es del catalogo de tejedores
+  if (path.startsWith('productos/') || path.startsWith('comprobante/') || path.startsWith('ordenes/')) {
+    return `/static/${path}`;
+  }
+  
+  // Por defecto, agregar /static/ si no comienza con /
   if (!path.startsWith('/')) {
     return `/static/${path}`;
   }
+  
   return path;
 }
 
