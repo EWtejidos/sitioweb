@@ -37,22 +37,62 @@ overviewTable.addEventListener("click", (event) => {
     return;
   }
 
-  const actionLabel = getOrderAction(order).label.toLowerCase();
-  adminCommon.setStatus(overviewStatus, `Orden ${order.orderCode}: ${actionLabel} para ${order.cliente}.`);
+  if (button.textContent.trim() === "Aprobar") {
+    handleApprove(order);
+  } else {
+    const actionLabel = getOrderAction(order).label.toLowerCase();
+    adminCommon.setStatus(overviewStatus, `Orden ${order.orderCode}: ${actionLabel} para ${order.cliente}.`);
+  }
 });
+
+async function handleApprove(order) {
+  try {
+    const response = await fetch(`/api/admin/orders/${order.id}/approve-anticipo`, {
+      method: "POST",
+      headers: {
+        Accept: "application/json"
+      }
+    });
+
+    if (!response.ok) {
+      throw await buildRequestError(response);
+    }
+
+    adminCommon.setStatus(overviewStatus, `Anticipo aprobado.`);
+    await loadRecentOrders();
+  } catch (error) {
+    console.error("No fue posible aprobar el anticipo", error);
+    adminCommon.setStatus(overviewStatus, `No fue posible aprobar: ${error.message}`);
+  }
+}
+
+async function buildRequestError(response) {
+  let message = `HTTP ${response.status}`;
+
+  try {
+    const payload = await response.json();
+    if (payload.error) {
+      message = payload.error;
+    }
+  } catch (error) {
+    console.error("No fue posible leer la respuesta del servidor", error);
+  }
+
+  return new Error(message);
+}
 
 function renderOverviewTable() {
   // Filtra segun la pestaña activa.
   const filteredOrders = recentOrders.filter((order) => {
     if (overviewFilter === "pendientes") {
-      return order.estado === "pendiente";
+      return ["cotizacion", "anticipo_pendiente", "rechazado"].includes(order.rawStatus);
     }
 
     if (overviewFilter === "proceso") {
-      return order.estado === "en-proceso";
+      return order.rawStatus === "comprado";
     }
 
-    return order.estado === "completada";
+    return false;
   });
 
   // Renderiza la tabla principal con datos mapeados del backend.
@@ -66,44 +106,39 @@ function renderOverviewTable() {
         <table class="overview-table">
           <thead>
             <tr>
-              <th>ID_orden</th>
-              <th>Orden</th>
-              <th>Cliente</th>
+              <th>ID Orden</th>
               <th>Producto</th>
-              <th>Imagen</th>
-              <th>Fecha solicitud</th>
-              <th>Estado</th>
-              <th>Acciones</th>
+              ${overviewFilter === "pendientes" ? "<th>Anticipo</th><th>Acciones</th>" : "<th>Precio</th><th>Fase</th>"}
             </tr>
           </thead>
           <tbody>
             ${filteredOrders
               .map(
                 (order) => {
-                  const action = getOrderAction(order);
-                  return `
-                  <tr>
-                    <td class="overview-id">${order.idOrden}</td>
-                    <td class="overview-id">${order.orderCode}</td>
-                    <td>${order.cliente}</td>
-                    <td>${order.producto}</td>
-                    <td>
-                      <img class="overview-thumb" src="${order.productImage}" alt="Producto ${order.orderCode}">
-                    </td>
-                    <td>${order.fecha}</td>
-                    <td><span class="status-badge ${adminCommon.normalizeStatusClass(order.estado)}">${adminCommon.formatStatus(order.estado)}</span></td>
-                    <td>
-                      <button class="button ${action.style}" type="button" data-order-id="${order.id}">
-                        ${action.label}
-                      </button>
-                    </td>
-                  </tr>
-                `;
+                  if (overviewFilter === "pendientes") {
+                    return `
+                      <tr>
+                        <td class="overview-id">${order.idOrden}</td>
+                        <td>${order.product_name || "Sin nombre"}</td>
+                        <td>${order.anticipo}</td>
+                        <td>
+                          <button class="button primary" type="button" data-order-id="${order.id}">Aprobar</button>
+                        </td>
+                      </tr>`;
+                  } else {
+                    return `
+                      <tr>
+                        <td class="overview-id">${order.idOrden}</td>
+                        <td>${order.product_name || "Sin nombre"}</td>
+                        <td>${order.cotizacionMax}</td>
+                        <td>${getFase(order)}</td>
+                      </tr>`;
+                  }
                 }
               )
               .join("") || `
                 <tr>
-                  <td colspan="8">No hay ordenes en esta vista todavia.</td>
+                  <td colspan="${overviewFilter === "pendientes" ? 4 : 4}">No hay ordenes en esta vista todavia.</td>
                 </tr>
               `}
           </tbody>
@@ -148,12 +183,13 @@ function mapOrderForView(order) {
   return {
     id: order.id,
     idOrden: order.id_orden || "Sin ID",
-    orderCode: order.order_code || `#${order.id}`,
+    orderCode: order.id_orden || `#${order.id}`,
     cliente: order.cliente || "Cliente sin nombre",
     fecha: order.fecha || "Sin fecha",
     estado,
     rawStatus: order.status,
     producto: order.producto || "Producto personalizado",
+    product_name: order.product_name,
     productImage: normalizeImagePath(order.product_image),
     anticipo: order.anticipo,
     cotizacionMin: order.cotizacion_min,
@@ -194,4 +230,10 @@ function getOrderAction(order) {
   }
 
   return { label: "Revisar cotizacion", style: "warning" };
+}
+
+function getFase(order) {
+  // Lógica para determinar fase según ordenesadmin
+  // Por ahora, simplificar
+  return "1";
 }

@@ -39,9 +39,19 @@ ordenesContainer.addEventListener("click", (event) => {
     return;
   }
 
+  if (button.dataset.action === "edit") {
+    openEditModal(item);
+    return;
+  }
+
+  if (button.dataset.action === "message-client") {
+    openClientMessageModal(item);
+    return;
+  }
+
   const messages = {
     assign: `Asignacion pendiente para ${item.orderCode}.`,
-    "edit-date": `Fecha operativa pendiente para ${item.orderCode}.`,
+    edit: `Editando orden ${item.orderCode}.`,
     "message-weaver": `Mensaje listo para tejedoras sobre ${item.orderCode}.`,
     "message-client": `Mensaje preparado para ${item.cliente} sobre ${item.orderCode}.`,
     ready: `Orden ${item.orderCode} lista para marcar cierre de produccion.`,
@@ -53,6 +63,45 @@ ordenesContainer.addEventListener("click", (event) => {
 
   adminCommon.setStatus(ordenesStatus, messages[button.dataset.action] || `Accion lista para ${item.orderCode}.`);
 });
+
+function openEditModal(item) {
+  // Abre modal para editar deadline y quote_max
+  const deadline = prompt("Fecha límite (nuevo):", item.deadline || "");
+  if (deadline === null) return;
+
+  const quoteMax = prompt("Cotización máxima (nuevo):", item.price || "");
+  if (quoteMax === null) return;
+
+  // Aquí va la lógica de actualización
+  adminCommon.setStatus(ordenesStatus, `Datos de ${item.orderCode} actualizados. (Implementar endpoint)`);
+}
+
+function openClientMessageModal(item) {
+  // Calcula siguiente sábado desde deadline
+  const deadlineDate = new Date(item.deadline || Date.now());
+  const saturdayDate = getNextSaturday(deadlineDate);
+  const paymentDate = new Date(saturdayDate);
+  paymentDate.setDate(paymentDate.getDate() - 1);
+
+  const formattedSaturday = saturdayDate.toLocaleDateString("es-CO");
+  const formattedPayment = paymentDate.toLocaleDateString("es-CO");
+
+  const message = `Tu pedido estará listo el ${item.deadline}. Se entregará el ${formattedSaturday}. Debes completar el pago antes del ${formattedPayment}. Mira las políticas de compra.`;
+
+  alert(`Mensaje para ${item.cliente} (${item.waId}):\n\n${message}`);
+  
+  // Marcar como contactado
+  item.contactClient = true;
+  adminCommon.setStatus(ordenesStatus, `Contacto registrado para ${item.orderCode}. Moviendo a Fase 2...`);
+}
+
+function getNextSaturday(fromDate) {
+  const date = new Date(fromDate);
+  const dayOfWeek = date.getDay();
+  const daysUntilSaturday = (6 - dayOfWeek + 7) % 7 || 7;
+  date.setDate(date.getDate() + daysUntilSaturday);
+  return date;
+}
 
 async function loadOrdenes() {
   adminCommon.setStatus(ordenesStatus, "Cargando ordenes reales...");
@@ -85,9 +134,11 @@ function mapOrderForView(order) {
 
   return {
     id: order.id,
-    orderCode: order.order_code || `#${order.id}`,
+    orderCode: order.id_orden || `#${order.id}`,
+    idOrden: order.id_orden || `#${order.id}`,
     cliente: order.cliente || "Cliente sin nombre",
     producto: order.producto || "Producto personalizado",
+    product_name: order.product_name,
     productImage: normalizeImagePath(order.product_image),
     lengthCm: order.length_cm || "Sin dato",
     widthCm: order.width_cm || "Sin dato",
@@ -95,16 +146,17 @@ function mapOrderForView(order) {
     fecha: order.fecha || "",
     fechaHora: order.fecha_hora || "Sin fecha",
     deadline: order.deadline || "",
-    assigned: Boolean(order.assigned),
+    assigned: Boolean(order.assigned_to),
     weaver: order.weaver || order.assigned_to || "Sin asignar",
-    price: formatCurrency(order.cotizacion_max || order.cotizacion_min),
+    price: formatCurrency(order.quotacion_max || order.quotacion_min),
     startDate: order.fecha || "Pendiente",
     deliveryDate: order.deadline || "Por definir",
     paymentProof: normalizeImagePath(order.payment_proof),
     amount: formatCurrency(order.anticipo),
     checklist: order.description || "Pendiente checklist final",
     rawStatus: order.status,
-    workflow
+    workflow,
+    contactClient: false
   };
 }
 
@@ -211,13 +263,7 @@ function renderOrdenesTab() {
 
 function renderFase1() {
   const fase1Ordenes = ordenes
-    .filter((orden) => orden.workflow.fase1)
-    .filter((orden) => {
-      const hasDate = Boolean(orden.deadline);
-      const matchesDate = hasDate ? ordenesFiltros.conFecha : ordenesFiltros.sinFecha;
-      const matchesAssigned = orden.assigned ? ordenesFiltros.asignado : ordenesFiltros.noAsignado;
-      return matchesDate && matchesAssigned;
-    });
+    .filter((orden) => !orden.assigned || !orden.deadline || (orden.assigned && orden.deadline && !orden.contactClient));
 
   const markup = fase1Ordenes
     .map(
@@ -244,10 +290,8 @@ function renderFase1() {
             </div>
           </div>
           <div class="record-actions">
-            <button class="button primary" type="button" data-action="assign" data-id="${orden.id}">Asignar tejedor</button>
-            <button class="button secondary" type="button" data-action="edit-date" data-id="${orden.id}">Editar fecha</button>
-            <button class="button secondary" type="button" data-action="message-weaver" data-id="${orden.id}">Escribir a tejedores</button>
-            <button class="button secondary" type="button" data-action="message-client" data-id="${orden.id}">Escribir al cliente</button>
+            <button class="button secondary" type="button" data-action="edit" data-id="${orden.id}">Editar</button>
+            <button class="button primary" type="button" data-action="message-client" data-id="${orden.id}">Escribir al cliente</button>
           </div>
         </article>
       `
@@ -258,17 +302,11 @@ function renderFase1() {
     <article class="section-card">
       <div class="section-topline">
         <div>
-          <h4>Pre-asignacion</h4>
-          <span class="mini-copy">Aqui aparecen las ordenes cotizadas y tambien los anticipos ya aprobados desde validacion. Los filtros usan la fecha de entrega guardada en la base de datos.</span>
-        </div>
-        <div class="filter-row">
-          <label class="filter-chip"><input type="checkbox" data-filter="conFecha" ${ordenesFiltros.conFecha ? "checked" : ""}> Con fecha de entrega</label>
-          <label class="filter-chip"><input type="checkbox" data-filter="sinFecha" ${ordenesFiltros.sinFecha ? "checked" : ""}> Sin fecha de entrega</label>
-          <label class="filter-chip"><input type="checkbox" data-filter="asignado" ${ordenesFiltros.asignado ? "checked" : ""}> Asignado</label>
-          <label class="filter-chip"><input type="checkbox" data-filter="noAsignado" ${ordenesFiltros.noAsignado ? "checked" : ""}> No asignado</label>
+          <h4>Fase 1</h4>
+          <span class="mini-copy">Ordenes sin tejedor asignado, sin fecha limite, o con tejedor y fecha pero sin contacto al cliente.</span>
         </div>
       </div>
-      <div class="record-list">${markup || emptyState("No hay ordenes en pre-asignacion todavia.")}</div>
+      <div class="record-list">${markup || emptyState("No hay ordenes en fase 1.")}</div>
     </article>
   `;
 }

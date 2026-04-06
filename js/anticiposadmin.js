@@ -8,6 +8,7 @@ const uploadingReferenceIds = new Set();
 const ANTICIPO_REJECT_TEMPLATE = "Estimado cliente el anticipo no concuerda con lo recibido. Si desea subirlo nuevamente escriba anticipo+{orderId}.";
 let activePreview = null;
 let rejectModalOrderId = null;
+let editModalOrder = null;
 
 renderAnticipos();
 loadAnticipos();
@@ -54,6 +55,10 @@ anticiposContainer.addEventListener("click", (event) => {
     handleApprove(item);
   }
 
+  if (button.dataset.action === "edit") {
+    openEditModal(item);
+  }
+
   if (button.dataset.action === "reject") {
     openRejectModal(item);
   }
@@ -83,6 +88,20 @@ document.addEventListener("click", (event) => {
     return;
   }
 
+  const editClose = event.target.closest("[data-edit-close]");
+  const editForm = event.target.closest("#editOrderForm");
+
+  if (editClose || event.target.classList.contains("edit-modal-overlay")) {
+    closeEditModal();
+    return;
+  }
+
+  if (editForm && event.type === "submit") {
+    event.preventDefault();
+    handleEditSave();
+    return;
+  }
+
   const button = event.target.closest("[data-header-action]");
   if (!button) {
     return;
@@ -96,6 +115,22 @@ document.addEventListener("click", (event) => {
     showBulkUploadHelp = true;
     renderAnticipos();
     adminCommon.setStatus(anticiposStatus, "Usa el boton Subir de cada fila en la columna Referencia para escoger una imagen desde tu PC.");
+  }
+
+  const globalButton = event.target.closest("[data-global-action]");
+  if (globalButton) {
+    if (globalButton.dataset.globalAction === "delete-selected") {
+      handleDeleteSelected();
+    }
+    if (globalButton.dataset.globalAction === "export-csv") {
+      handleExportCSV();
+    }
+  }
+
+  const selectAll = event.target.closest("#select-all");
+  if (selectAll) {
+    const checkboxes = document.querySelectorAll(".row-select");
+    checkboxes.forEach(cb => cb.checked = selectAll.checked);
   }
 });
 
@@ -138,8 +173,8 @@ function mapAnticipoForView(order) {
 
   return {
     id: order.id,
-    businessOrderId: order.id_orden || order.order_code || `#${order.id}`,
-    orderCode: order.order_code || `#${order.id}`,
+    businessOrderId: order.id_orden || `#${order.id}`,
+    orderCode: order.id_orden || `#${order.id}`,
     waId: order.wa_id || "",
     cliente: order.cliente || "Cliente sin nombre",
     whatsappProof: normalizeImagePath(order.payment_proof),
@@ -147,7 +182,20 @@ function mapAnticipoForView(order) {
     similarity,
     status,
     total: formatCurrency(order.anticipo),
-    referencia: order.producto || "Pedido personalizado"
+    referencia: order.producto || "Pedido personalizado",
+    id_orden: order.id_orden,
+    product_type: order.product_type,
+    product_name: order.product_name,
+    colors: order.colors,
+    length_cm: order.length_cm,
+    width_cm: order.width_cm,
+    description: order.description,
+    full_name: order.full_name,
+    delivery: order.delivery,
+    date: order.date,
+    deadline: order.deadline,
+    quote_min: order.quote_min,
+    quote_max: order.quote_max
   };
 }
 
@@ -176,6 +224,7 @@ function renderAnticipos() {
     .map(
       (anticipo) => `
         <tr>
+          <td><input type="checkbox" class="row-select" data-id="${anticipo.id}"></td>
           <td class="verification-order-id">${anticipo.orderCode}</td>
           <td>${anticipo.cliente}</td>
           <td>
@@ -191,7 +240,7 @@ function renderAnticipos() {
           <td>
             <div class="verification-actions">
               <button class="button primary" type="button" data-action="approve" data-id="${anticipo.id}">Aprobar</button>
-              <button class="button danger" type="button" data-action="reject" data-id="${anticipo.id}">Rechazar</button>
+              <button class="button secondary" type="button" data-action="edit" data-id="${anticipo.id}">Editar</button>
             </div>
           </td>
         </tr>
@@ -215,9 +264,14 @@ function renderAnticipos() {
         </div>
       ` : ""}
       <div class="verification-table-wrap">
+        <div class="global-actions">
+          <button class="button danger" type="button" data-global-action="delete-selected">🗑 Eliminar</button>
+          <button class="button secondary" type="button" data-global-action="export-csv">📄 Imprimir CSV</button>
+        </div>
         <table class="verification-table">
           <thead>
             <tr>
+              <th><input type="checkbox" id="select-all"></th>
               <th>ID orden</th>
               <th>Cliente</th>
               <th>Comprobante cliente</th>
@@ -322,7 +376,7 @@ function renderImagePreviewModal() {
 }
 
 function renderFloatingModals() {
-  modalHost.innerHTML = renderImagePreviewModal() + renderRejectModal();
+  modalHost.innerHTML = renderImagePreviewModal() + renderRejectModal() + renderEditModal();
 }
 
 function renderRejectModal() {
@@ -348,6 +402,79 @@ function renderRejectModal() {
         <div class="reject-modal-actions">
           <button class="button primary" type="button" data-reject-copy>Copiar</button>
         </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderEditModal() {
+  if (!editModalOrder) {
+    return "";
+  }
+
+  return `
+    <div class="edit-modal-overlay">
+      <div class="edit-modal-card" role="dialog" aria-modal="true" aria-label="Editar orden">
+        <button class="preview-close-button" type="button" data-edit-close aria-label="Cerrar">×</button>
+        <h4>Editar Orden ${editModalOrder.orderCode}</h4>
+        <form id="editOrderForm">
+          <div class="form-group">
+            <label for="edit_id_orden">ID Orden</label>
+            <input type="text" id="edit_id_orden" name="id_orden" value="${editModalOrder.id_orden || ''}" required>
+          </div>
+          <div class="form-group">
+            <label for="edit_product_type">Tipo de Producto</label>
+            <input type="text" id="edit_product_type" name="product_type" value="${editModalOrder.product_type || ''}">
+          </div>
+          <div class="form-group">
+            <label for="edit_product_name">Nombre del Producto</label>
+            <input type="text" id="edit_product_name" name="product_name" value="${editModalOrder.product_name || ''}">
+          </div>
+          <div class="form-group">
+            <label for="edit_colors">Colores</label>
+            <input type="text" id="edit_colors" name="colors" value="${editModalOrder.colors || ''}">
+          </div>
+          <div class="form-group">
+            <label for="edit_length_cm">Largo (cm)</label>
+            <input type="text" id="edit_length_cm" name="length_cm" value="${editModalOrder.length_cm || ''}">
+          </div>
+          <div class="form-group">
+            <label for="edit_width_cm">Ancho (cm)</label>
+            <input type="text" id="edit_width_cm" name="width_cm" value="${editModalOrder.width_cm || ''}">
+          </div>
+          <div class="form-group">
+            <label for="edit_description">Descripción</label>
+            <textarea id="edit_description" name="description">${editModalOrder.description || ''}</textarea>
+          </div>
+          <div class="form-group">
+            <label for="edit_full_name">Nombre Completo</label>
+            <input type="text" id="edit_full_name" name="full_name" value="${editModalOrder.full_name || ''}">
+          </div>
+          <div class="form-group">
+            <label for="edit_delivery">Entrega</label>
+            <input type="text" id="edit_delivery" name="delivery" value="${editModalOrder.delivery || ''}">
+          </div>
+          <div class="form-group">
+            <label for="edit_date">Fecha</label>
+            <input type="text" id="edit_date" name="date" value="${editModalOrder.date || ''}">
+          </div>
+          <div class="form-group">
+            <label for="edit_deadline">Fecha Límite</label>
+            <input type="text" id="edit_deadline" name="deadline" value="${editModalOrder.deadline || ''}">
+          </div>
+          <div class="form-group">
+            <label for="edit_quote_min">Cotización Mínima</label>
+            <input type="number" id="edit_quote_min" name="quote_min" value="${editModalOrder.quote_min || ''}">
+          </div>
+          <div class="form-group">
+            <label for="edit_quote_max">Cotización Máxima</label>
+            <input type="number" id="edit_quote_max" name="quote_max" value="${editModalOrder.quote_max || ''}">
+          </div>
+          <div class="edit-modal-actions">
+            <button type="button" class="button secondary" data-edit-close>Cancelar</button>
+            <button type="submit" class="button primary">Guardar</button>
+          </div>
+        </form>
       </div>
     </div>
   `;
@@ -381,12 +508,21 @@ function closeRejectModal() {
   renderFloatingModals();
 }
 
-async function handleApprove(anticipo) {
-  if (!anticipo.referenceImage) {
-    adminCommon.setStatus(anticiposStatus, `Debes subir una referencia para la orden ${anticipo.orderCode} antes de aprobarla.`);
+function openEditModal(anticipo) {
+  editModalOrder = anticipo;
+  renderFloatingModals();
+}
+
+function closeEditModal() {
+  if (!editModalOrder) {
     return;
   }
 
+  editModalOrder = null;
+  renderFloatingModals();
+}
+
+async function handleApprove(anticipo) {
   try {
     const response = await fetch(`/api/admin/orders/${anticipo.id}/approve-anticipo`, {
       method: "POST",
@@ -460,6 +596,34 @@ async function handleRejectCopy() {
   }
 }
 
+async function handleEditSave() {
+  const form = document.getElementById("editOrderForm");
+  const formData = new FormData(form);
+  const data = Object.fromEntries(formData);
+
+  try {
+    const response = await fetch(`/api/admin/orders/${editModalOrder.id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json"
+      },
+      body: JSON.stringify(data)
+    });
+
+    if (!response.ok) {
+      throw await buildRequestError(response);
+    }
+
+    closeEditModal();
+    adminCommon.setStatus(anticiposStatus, `Orden ${editModalOrder.orderCode} actualizada correctamente.`);
+    await loadAnticipos();
+  } catch (error) {
+    console.error("No fue posible actualizar la orden", error);
+    adminCommon.setStatus(anticiposStatus, `No fue posible actualizar la orden ${editModalOrder.orderCode}: ${error.message}`);
+  }
+}
+
 async function buildRequestError(response) {
   let message = `HTTP ${response.status}`;
 
@@ -495,6 +659,72 @@ async function copyToClipboard(text) {
   if (!copied) {
     throw new Error("No se pudo copiar el mensaje.");
   }
+}
+
+async function handleDeleteSelected() {
+  const selected = document.querySelectorAll(".row-select:checked");
+  if (!selected.length) {
+    adminCommon.setStatus(anticiposStatus, "Selecciona al menos una orden para eliminar.");
+    return;
+  }
+
+  const ids = Array.from(selected).map(cb => cb.dataset.id);
+  if (!confirm(`¿Estás seguro de eliminar ${ids.length} orden(es)?`)) {
+    return;
+  }
+
+  try {
+    for (const id of ids) {
+      const response = await fetch(`/api/admin/orders/${id}`, {
+        method: "DELETE",
+        headers: {
+          Accept: "application/json"
+        }
+      });
+      if (!response.ok) {
+        throw new Error(`Error eliminando orden ${id}`);
+      }
+    }
+    adminCommon.setStatus(anticiposStatus, `${ids.length} orden(es) eliminada(s).`);
+    await loadAnticipos();
+  } catch (error) {
+    console.error("Error eliminando órdenes", error);
+    adminCommon.setStatus(anticiposStatus, `Error eliminando órdenes: ${error.message}`);
+  }
+}
+
+function handleExportCSV() {
+  const csvContent = [
+    ["full_name", "product_type", "product_name", "product_image", "colors", "length_cm", "width_cm", "description", "delivery", "date", "deadline", "wa_id", "payment_proof", "status", "quote_min", "quote_max", "advance_payment", "id_orden"],
+    ...anticipos.map(a => [
+      a.full_name || "",
+      a.product_type || "",
+      a.product_name || "",
+      a.product_image || "",
+      a.colors || "",
+      a.length_cm || "",
+      a.width_cm || "",
+      a.description || "",
+      a.delivery || "",
+      a.date || "",
+      a.deadline || "",
+      a.waId || "",
+      a.whatsappProof || "",
+      a.status || "",
+      a.quote_min || "",
+      a.quote_max || "",
+      a.advance_payment || "",
+      a.id_orden || ""
+    ])
+  ].map(row => row.map(cell => `"${cell}"`).join(",")).join("\n");
+
+  const blob = new Blob([csvContent], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "anticipos.csv";
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 function createModalHost() {

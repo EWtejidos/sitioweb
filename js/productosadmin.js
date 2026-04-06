@@ -282,7 +282,7 @@ function combineProductData(clientOrders, weaverProducts) {
         colors: mappedOrder.colors || '',
         measurements: `${mappedOrder.length_cm || '?'} x ${mappedOrder.width_cm || '?'} cm`,
         description: mappedOrder.description || '',
-        orders: mappedOrder.order_code ? [mappedOrder.order_code] : [],
+        orders: mappedOrder.id_orden ? [mappedOrder.id_orden] : [],
         fullData: mappedOrder,
         created: mappedOrder.created_at || mappedOrder.fecha_hora || new Date().toISOString()
       };
