@@ -120,9 +120,9 @@ function renderOverviewTable() {
                     return `
                       <tr>
                         <td class="overview-id">${order.idOrden}</td>
-                        <td>${order.product_name || "Sin nombre"}</td>
+                        <td>${order.producto || "Sin nombre"}</td>
                         <td>
-                          ${order.productImage ? `<img src="${order.productImage}" alt="Producto" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;">` : 'Sin imagen'}
+                          ${order.productImage ? `<img src="${order.productImage}" alt="Producto" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;" onerror="this.style.display='none'; this.parentElement.innerHTML='Sin imagen';">` : 'Sin imagen'}
                         </td>
                         <td>${order.anticipo}</td>
                         <td>
@@ -133,9 +133,9 @@ function renderOverviewTable() {
                     return `
                       <tr>
                         <td class="overview-id">${order.idOrden}</td>
-                        <td>${order.product_name || "Sin nombre"}</td>
+                        <td>${order.producto || "Sin nombre"}</td>
                         <td>
-                          ${order.productImage ? `<img src="${order.productImage}" alt="Producto" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;">` : 'Sin imagen'}
+                          ${order.productImage ? `<img src="${order.productImage}" alt="Producto" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;" onerror="this.style.display='none'; this.parentElement.innerHTML='Sin imagen';">` : 'Sin imagen'}
                         </td>
                         <td>${order.cotizacionMax}</td>
                         <td>${getFase(order)}</td>
@@ -205,12 +205,64 @@ function mapOrderForView(order) {
 }
 
 function normalizeImagePath(path) {
-  // Si no hay imagen en BD, usa placeholder local.
-  if (!path) {
-    return "images/products/top.jpg";
+  if (!path) return '';
+  
+  const originalPath = path;
+  
+  // Si ya es una URL válida absoluta, devolverla como está
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path;
   }
-
-  return path.replace(/\\/g, "/").replace(/^\.\//, "");
+  
+  // Si ya es ruta absoluta desde raíz (/), devolverla como está 
+  // (asume que ya está completa)
+  if (path.startsWith('/')) {
+    return path;
+  }
+  
+  // CASOS RELATIVOS: rutas relativas que necesitan ser absolutas desde raíz
+  // Identificar el tipo de imagen por el prefijo
+  let resolved = path;
+  
+  // Órdenes de WhatsApp - imágenes del bot
+  if (path.startsWith('img/')) {
+    resolved = `/${path}`;
+    console.debug(`  🖼️  Imagen WhatsApp: ${originalPath} → ${resolved}`);
+    return resolved;
+  }
+  
+  // Productos de tejedores - catálogo
+  if (path.startsWith('productos/')) {
+    resolved = `/${path}`;
+    console.debug(`  🖼️  Imagen Tejedor: ${originalPath} → ${resolved}`);
+    return resolved;
+  }
+  
+  // Comprobante de pago
+  if (path.startsWith('comprobante/')) {
+    resolved = `/${path}`;
+    console.debug(`  🖼️  Comprobante: ${originalPath} → ${resolved}`);
+    return resolved;
+  }
+  
+  // Órdenes (archivos relacionados)
+  if (path.startsWith('ordenes/')) {
+    resolved = `/${path}`;
+    console.debug(`  🖼️  Orden: ${originalPath} → ${resolved}`);
+    return resolved;
+  }
+  
+  // Referencias (imágenes de referencia cargadas manualmente)
+  if (path.startsWith('img/referencias/')) {
+    resolved = `/${path}`;
+    console.debug(`  🖼️  Referencia: ${originalPath} → ${resolved}`);
+    return resolved;
+  }
+  
+  // Por DEFECTO: esto no debería pasar, pero como fallback agregamos /
+  resolved = `/${path}`;
+  console.warn(`  ⚠️  Ruta no reconocida, usando fallback: ${originalPath} → ${resolved}`);
+  return resolved;
 }
 
 function normalizeDashboardStatus(status) {
