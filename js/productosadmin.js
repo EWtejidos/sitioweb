@@ -267,8 +267,8 @@ function combineProductData(clientOrders, weaverProducts) {
       }
       
       const productItem = {
-        id: mappedOrder.id_orden || `O-${mappedOrder.id}`,
-        productId: mappedOrder.id_orden,
+        id: `P-${String(mappedOrder.id).padStart(5, '0')}`,
+        productId: mappedOrder.id,
         name: mappedOrder.product_name || 'Producto sin nombre',
         category: mappedOrder.producto 
           ? (mappedOrder.producto.split(' / ')[0] || mappedOrder.product_type || 'Personalizado')
@@ -544,6 +544,7 @@ function renderTable() {
                 <div class="table-actions">
                   <button class="button secondary" data-action="view" data-product-id="${product.id}">Ver</button>
                   <button class="button secondary" data-action="edit" data-product-id="${product.id}">Editar</button>
+                  <button class="button danger" data-action="delete" data-product-id="${product.id}">Eliminar</button>
                 </div>
               </td>
             </tr>
@@ -642,6 +643,8 @@ function setupTableListeners() {
         showProductDetails(productId);
       } else if (action === 'edit') {
         showProductEditModal(productId);
+      } else if (action === 'delete') {
+        showDeleteConfirmation(productId);
       }
     });
   });
@@ -688,16 +691,53 @@ function showProductGallery(productId) {
   setupModalListeners();
 }
 
-function showProductEditModal(productId) {
+function showDeleteConfirmation(productId) {
   const product = productosState.allProducts.find(p => p.id === productId);
   if (!product) return;
   
-  productosState.selectedProduct = product;
-  productosState.currentModalType = 'edit';
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.dataset.modalClose = 'true';
   
-  const modal = createEditModal(product);
-  document.body.appendChild(modal);
+  const card = document.createElement('div');
+  card.className = 'modal-card';
+  
+  card.innerHTML = `
+    <button class="modal-close" data-modal-close="true" type="button">✕</button>
+    
+    <div class="modal-header">
+      <h2>Confirmar eliminación</h2>
+    </div>
+
+    <div class="modal-content">
+      <div style="text-align: center; padding: 2rem;">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">⚠️</div>
+        <h3>¿Estás seguro de que quieres eliminar este producto?</h3>
+        <p style="margin: 1rem 0; color: var(--text-secondary);">
+          <strong>${escapeHtml(product.name)}</strong> (ID: ${product.id})
+        </p>
+        <p style="color: var(--error); font-weight: 500;">
+          Esta acción no se puede deshacer.
+        </p>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="button secondary" data-modal-close="true" type="button">Cancelar</button>
+      <button class="button danger" id="confirmDeleteBtn" type="button">Eliminar producto</button>
+    </div>
+  `;
+  
+  overlay.appendChild(card);
+  document.body.appendChild(overlay);
+  
+  // Setup listeners
   setupModalListeners();
+  
+  // Confirm delete
+  document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
+    handleDeleteProduct(productId);
+  });
 }
 
 function createDetailModal(product) {
@@ -931,6 +971,11 @@ function createEditModal(product) {
   
   overlay.appendChild(card);
   
+  // Prevenir que clicks en inputs cierren el modal
+  card.querySelectorAll('input, textarea, select').forEach(el => {
+    el.addEventListener('click', (e) => e.stopPropagation());
+  });
+  
   // Event listener para guardar
   const form = card.querySelector('#editProductForm');
   form?.addEventListener('submit', (e) => {
@@ -993,26 +1038,25 @@ function closeModal() {
 // GUARDADO DE CAMBIOS
 // ============================================================
 
-function handleSaveProductChanges(productId, name, category, price, colors, measurements, description) {
-  // Actualizar en estado local
-  const product = productosState.allProducts.find(p => p.id === productId);
-  if (!product) return;
+function handleDeleteProduct(productId) {
+  // Remover del estado local
+  const index = productosState.allProducts.findIndex(p => p.id === productId);
+  if (index === -1) return;
   
-  product.name = name;
-  product.category = category;
-  product.price = price;
-  if (product.source === 'cliente') {
-    product.colors = colors;
-    product.measurements = measurements;
-    product.description = description;
-  }
+  const product = productosState.allProducts[index];
+  productosState.allProducts.splice(index, 1);
   
-  // Aquí iría el llamado a una API para guardar en el backend
-  // Por ahora, solo mostramos que se guardó
-  updateStatus(`✅ Producto "${name}" actualizado localmente`);
+  // Actualizar filtered
+  productosState.filteredProducts = productosState.filteredProducts.filter(p => p.id !== productId);
   
+  // Cerrar modal
   closeModal();
-  applyFilters();
+  
+  // Re-renderizar tabla
+  renderTable();
+  
+  // Aquí iría el llamado a una API para eliminar del backend
+  updateStatus(`🗑️ Producto "${product.name}" eliminado localmente`);
 }
 
 // ============================================================
@@ -1137,47 +1181,47 @@ function normalizeImagePath(path) {
     return path;
   }
   
-  // CASOS RELATIVOS: rutas relativas que necesitan /static/ como prefijo
+  // CASOS RELATIVOS: rutas relativas que necesitan ser absolutas desde raíz
   // Identificar el tipo de imagen por el prefijo
   let resolved = path;
   
   // Órdenes de WhatsApp - imágenes del bot
   if (path.startsWith('img/')) {
-    resolved = `/static/${path}`;
+    resolved = `/${path}`;
     console.debug(`  🖼️  Imagen WhatsApp: ${originalPath} → ${resolved}`);
     return resolved;
   }
   
   // Productos de tejedores - catálogo
   if (path.startsWith('productos/')) {
-    resolved = `/static/${path}`;
+    resolved = `/${path}`;
     console.debug(`  🖼️  Imagen Tejedor: ${originalPath} → ${resolved}`);
     return resolved;
   }
   
   // Comprobante de pago
   if (path.startsWith('comprobante/')) {
-    resolved = `/static/${path}`;
+    resolved = `/${path}`;
     console.debug(`  🖼️  Comprobante: ${originalPath} → ${resolved}`);
     return resolved;
   }
   
   // Órdenes (archivos relacionados)
   if (path.startsWith('ordenes/')) {
-    resolved = `/static/${path}`;
+    resolved = `/${path}`;
     console.debug(`  🖼️  Orden: ${originalPath} → ${resolved}`);
     return resolved;
   }
   
   // Referencias (imágenes de referencia cargadas manualmente)
   if (path.startsWith('img/referencias/')) {
-    resolved = `/static/${path}`;
+    resolved = `/${path}`;
     console.debug(`  🖼️  Referencia: ${originalPath} → ${resolved}`);
     return resolved;
   }
   
-  // Por DEFECTO: esto no debería pasar, pero como fallback agregamos /static/
-  resolved = `/static/${path}`;
+  // Por DEFECTO: esto no debería pasar, pero como fallback agregamos /
+  resolved = `/${path}`;
   console.warn(`  ⚠️  Ruta no reconocida, usando fallback: ${originalPath} → ${resolved}`);
   return resolved;
 }
@@ -1192,3 +1236,4 @@ function formatNumber(num) {
 function formatDate(date) {
   return date.toISOString().split('T')[0];
 }
+GG
