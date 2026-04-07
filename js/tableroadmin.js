@@ -83,13 +83,21 @@ async function buildRequestError(response) {
 
 function renderOverviewTable() {
   // Filtra segun la pestaña activa.
+  const pendingStatuses = ["cotizacion", "anticipo_pendiente", "rechazado", "pendiente"];
+  const inProgressStatuses = ["comprado"];
+  const completedStatuses = ["terminado", "completado", "entregado"];
+
   const filteredOrders = recentOrders.filter((order) => {
     if (overviewFilter === "pendientes") {
-      return ["cotizacion", "anticipo_pendiente", "rechazado"].includes(order.rawStatus);
+      return pendingStatuses.includes(order.rawStatus);
     }
 
     if (overviewFilter === "proceso") {
-      return order.rawStatus === "comprado";
+      return inProgressStatuses.includes(order.rawStatus);
+    }
+
+    if (overviewFilter === "completadas") {
+      return completedStatuses.includes(order.rawStatus);
     }
 
     return false;
@@ -195,9 +203,9 @@ function mapOrderForView(order) {
     fecha: order.fecha || "Sin fecha",
     estado,
     rawStatus: order.status,
-    producto: order.producto || "Producto personalizado",
+    producto: order.product_name || order.producto || order.product_type || "Producto personalizado",
     product_name: order.product_name,
-    productImage: normalizeImagePath(order.product_image),
+    productImage: normalizeImagePath(order.product_image || order.reference_image),
     anticipo: order.anticipo,
     cotizacionMin: order.cotizacion_min,
     cotizacionMax: order.cotizacion_max
@@ -207,62 +215,47 @@ function mapOrderForView(order) {
 function normalizeImagePath(path) {
   if (!path) return '';
   
-  const originalPath = path;
+  let normalized = String(path).trim().replace(/\\/g, '/');
   
-  // Si ya es una URL válida absoluta, devolverla como está
-  if (path.startsWith('http://') || path.startsWith('https://')) {
-    return path;
+  // Quitar prefijos relativos como ./ o ../
+  normalized = normalized.replace(/^\.\//, '');
+  normalized = normalized.replace(/^\.\.(\/)?/, '');
+  
+  const originalPath = normalized;
+  
+  if (normalized.startsWith('http://') || normalized.startsWith('https://')) {
+    return normalized;
   }
   
-  // Si ya es ruta absoluta desde raíz (/), devolverla como está 
-  // (asume que ya está completa)
-  if (path.startsWith('/')) {
-    return path;
+  if (normalized.startsWith('/')) {
+    return normalized;
   }
   
-  // CASOS RELATIVOS: rutas relativas que necesitan ser absolutas desde raíz
-  // Identificar el tipo de imagen por el prefijo
-  let resolved = path;
-  
-  // Órdenes de WhatsApp - imágenes del bot
-  if (path.startsWith('img/')) {
-    resolved = `/${path}`;
-    console.debug(`  🖼️  Imagen WhatsApp: ${originalPath} → ${resolved}`);
-    return resolved;
+  if (normalized.startsWith('static/')) {
+    return `/${normalized}`;
   }
   
-  // Productos de tejedores - catálogo
-  if (path.startsWith('productos/')) {
-    resolved = `/${path}`;
-    console.debug(`  🖼️  Imagen Tejedor: ${originalPath} → ${resolved}`);
-    return resolved;
+  if (normalized.startsWith('img/')) {
+    return `/${normalized}`;
   }
   
-  // Comprobante de pago
-  if (path.startsWith('comprobante/')) {
-    resolved = `/${path}`;
-    console.debug(`  🖼️  Comprobante: ${originalPath} → ${resolved}`);
-    return resolved;
+  if (normalized.startsWith('productos/')) {
+    return `/${normalized}`;
   }
   
-  // Órdenes (archivos relacionados)
-  if (path.startsWith('ordenes/')) {
-    resolved = `/${path}`;
-    console.debug(`  🖼️  Orden: ${originalPath} → ${resolved}`);
-    return resolved;
+  if (normalized.startsWith('comprobante/')) {
+    return `/${normalized}`;
   }
   
-  // Referencias (imágenes de referencia cargadas manualmente)
-  if (path.startsWith('img/referencias/')) {
-    resolved = `/${path}`;
-    console.debug(`  🖼️  Referencia: ${originalPath} → ${resolved}`);
-    return resolved;
+  if (normalized.startsWith('ordenes/')) {
+    return `/${normalized}`;
   }
   
-  // Por DEFECTO: esto no debería pasar, pero como fallback agregamos /
-  resolved = `/${path}`;
-  console.warn(`  ⚠️  Ruta no reconocida, usando fallback: ${originalPath} → ${resolved}`);
-  return resolved;
+  if (normalized.startsWith('img/referencias/')) {
+    return `/${normalized}`;
+  }
+  
+  return `/${normalized}`;
 }
 
 function normalizeDashboardStatus(status) {
