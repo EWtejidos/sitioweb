@@ -116,7 +116,7 @@ function renderOverviewTable() {
             <tr>
               <th>ID Orden</th>
               <th>Producto</th>
-              <th>Imagen</th>
+              <th style="width: 100px;">Imagen</th>
               ${overviewFilter === "pendientes" ? "<th>Anticipo</th><th>Acciones</th>" : "<th>Precio</th><th>Fase</th>"}
             </tr>
           </thead>
@@ -130,7 +130,7 @@ function renderOverviewTable() {
                         <td class="overview-id">${order.idOrden}</td>
                         <td>${order.producto || "Sin nombre"}</td>
                         <td>
-                          ${order.productImage ? `<img src="${order.productImage}" alt="Producto" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;" onerror="this.style.display='none'; this.parentElement.innerHTML='Sin imagen';">` : 'Sin imagen'}
+                          ${order.productImage ? `<img src="${order.productImage}" alt="Producto" class="overview-thumb" onerror="this.style.display='none'; this.parentElement.innerHTML='Sin imagen';">` : 'Sin imagen'}
                         </td>
                         <td>${order.anticipo}</td>
                         <td>
@@ -143,7 +143,7 @@ function renderOverviewTable() {
                         <td class="overview-id">${order.idOrden}</td>
                         <td>${order.producto || "Sin nombre"}</td>
                         <td>
-                          ${order.productImage ? `<img src="${order.productImage}" alt="Producto" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;" onerror="this.style.display='none'; this.parentElement.innerHTML='Sin imagen';">` : 'Sin imagen'}
+                          ${order.productImage ? `<img src="${order.productImage}" alt="Producto" class="overview-thumb" onerror="this.style.display='none'; this.parentElement.innerHTML='Sin imagen';">` : 'Sin imagen'}
                         </td>
                         <td>${order.cotizacionMax}</td>
                         <td>${getFase(order)}</td>
