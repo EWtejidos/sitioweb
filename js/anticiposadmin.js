@@ -240,7 +240,7 @@ function renderAnticipos() {
           <td>
             <div class="verification-actions">
               <button class="button primary" type="button" data-action="approve" data-id="${anticipo.id}">Aprobar</button>
-              <button class="button secondary" type="button" data-action="edit" data-id="${anticipo.id}">Editar</button>
+              <button class="button danger" type="button" data-action="reject" data-id="${anticipo.id}">Rechazar</button>
             </div>
           </td>
         </tr>
@@ -407,6 +407,34 @@ function renderRejectModal() {
   `;
 }
 
+function renderRejectModal() {
+  if (!rejectModalOrderId) {
+    return "";
+  }
+
+  const anticipo = anticipos.find((item) => String(item.id) === String(rejectModalOrderId));
+  if (!anticipo) {
+    return "";
+  }
+
+  const message = ANTICIPO_REJECT_TEMPLATE.replace("{orderId}", anticipo.businessOrderId);
+
+  return `
+    <div class="reject-modal-overlay">
+      <div class="reject-modal-card" role="dialog" aria-modal="true" aria-label="Mensaje de rechazo de anticipo">
+        <button class="preview-close-button" type="button" data-reject-close aria-label="Cerrar mensaje">×</button>
+        <h4>Rechazo de anticipo</h4>
+        <p><strong>Cliente:</strong> ${anticipo.cliente}</p>
+        <p><strong>Numero:</strong> ${anticipo.waId || "Sin numero registrado"}</p>
+        <p>${message}</p>
+        <div class="reject-modal-actions">
+          <button class="button primary" type="button" data-reject-copy>Copiar</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 function renderEditModal() {
   if (!editModalOrder) {
     return "";
@@ -491,6 +519,20 @@ function closeImagePreview() {
   }
 
   activePreview = null;
+  renderFloatingModals();
+}
+
+function openRejectModal(anticipo) {
+  rejectModalOrderId = anticipo.id;
+  renderFloatingModals();
+}
+
+function closeRejectModal() {
+  if (!rejectModalOrderId) {
+    return;
+  }
+
+  rejectModalOrderId = null;
   renderFloatingModals();
 }
 
@@ -596,6 +638,38 @@ async function handleRejectCopy() {
   }
 }
 
+async function handleRejectCopy() {
+  const anticipo = anticipos.find((item) => String(item.id) === String(rejectModalOrderId));
+  if (!anticipo) {
+    closeRejectModal();
+    return;
+  }
+
+  const message = ANTICIPO_REJECT_TEMPLATE.replace("{orderId}", anticipo.businessOrderId);
+
+  try {
+    await copyToClipboard(message);
+
+    const response = await fetch(`/api/admin/orders/${anticipo.id}/reject-anticipo`, {
+      method: "POST",
+      headers: {
+        Accept: "application/json"
+      }
+    });
+
+    if (!response.ok) {
+      throw await buildRequestError(response);
+    }
+
+    closeRejectModal();
+    adminCommon.setStatus(anticiposStatus, `Mensaje copiado y anticipo rechazado para la orden ${anticipo.orderCode}.`);
+    await loadAnticipos();
+  } catch (error) {
+    console.error("No fue posible rechazar el anticipo", error);
+    adminCommon.setStatus(anticiposStatus, `No fue posible copiar o rechazar la orden ${anticipo.orderCode}: ${error.message}`);
+  }
+}
+
 async function handleEditSave() {
   const form = document.getElementById("editOrderForm");
   const formData = new FormData(form);
@@ -659,6 +733,60 @@ async function copyToClipboard(text) {
   if (!copied) {
     throw new Error("No se pudo copiar el mensaje.");
   }
+}
+
+function handleExportCSV() {
+  if (anticipos.length === 0) {
+    alert('No hay anticipos para exportar');
+    return;
+  }
+
+  // Headers del CSV
+  const headers = ['ID Orden', 'Cliente', 'Numero', 'ID Producto'];
+
+  // Datos
+  const rows = anticipos.map(anticipo => [
+    anticipo.orderCode,
+    anticipo.cliente,
+    anticipo.waId || 'Sin numero',
+    anticipo.product_name || anticipo.referencia || 'Sin producto'
+  ]);
+
+  // Construir CSV
+  const csvContent = [
+    headers.join(','),
+    ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+  ].join('\n');
+
+  // Descargar
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
+  const link = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+
+  link.setAttribute('href', url);
+  link.setAttribute('download', `anticipos_export_${new Date().toISOString().split('T')[0]}.csv`);
+  link.style.visibility = 'hidden';
+
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+
+  adminCommon.setStatus(anticiposStatus, `${anticipos.length} anticipos exportados a CSV`);
+}
+
+function handleDeleteSelected() {
+  const selectedIds = Array.from(document.querySelectorAll('.row-select:checked')).map(cb => cb.dataset.id);
+  if (selectedIds.length === 0) {
+    alert('Selecciona al menos un anticipo para eliminar');
+    return;
+  }
+
+  if (!confirm(`¿Eliminar ${selectedIds.length} anticipo(s) seleccionado(s)?`)) {
+    return;
+  }
+
+  // Implementar eliminación múltiple si es necesario
+  adminCommon.setStatus(anticiposStatus, 'Eliminación múltiple no implementada aún');
 }
 
 async function handleDeleteSelected() {
