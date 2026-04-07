@@ -108,6 +108,7 @@ function renderOverviewTable() {
             <tr>
               <th>ID Orden</th>
               <th>Producto</th>
+              <th>Imagen</th>
               ${overviewFilter === "pendientes" ? "<th>Anticipo</th><th>Acciones</th>" : "<th>Precio</th><th>Fase</th>"}
             </tr>
           </thead>
@@ -120,6 +121,9 @@ function renderOverviewTable() {
                       <tr>
                         <td class="overview-id">${order.idOrden}</td>
                         <td>${order.product_name || "Sin nombre"}</td>
+                        <td>
+                          ${order.productImage ? `<img src="${order.productImage}" alt="Producto" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;">` : 'Sin imagen'}
+                        </td>
                         <td>${order.anticipo}</td>
                         <td>
                           <button class="button primary" type="button" data-order-id="${order.id}">Aprobar</button>
@@ -130,6 +134,9 @@ function renderOverviewTable() {
                       <tr>
                         <td class="overview-id">${order.idOrden}</td>
                         <td>${order.product_name || "Sin nombre"}</td>
+                        <td>
+                          ${order.productImage ? `<img src="${order.productImage}" alt="Producto" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;">` : 'Sin imagen'}
+                        </td>
                         <td>${order.cotizacionMax}</td>
                         <td>${getFase(order)}</td>
                       </tr>`;
@@ -138,7 +145,7 @@ function renderOverviewTable() {
               )
               .join("") || `
                 <tr>
-                  <td colspan="${overviewFilter === "pendientes" ? 4 : 4}">No hay ordenes en esta vista todavia.</td>
+                  <td colspan="5">No hay ordenes en esta vista todavia.</td>
                 </tr>
               `}
           </tbody>
