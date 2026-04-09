@@ -48,10 +48,189 @@
           </div>
           <span class="section-badge" id="statusBadge">3 pagos esperando decision</span>
         </div>
-        <div class="view-shell" id="moduleContent"></div>
+        <div class="view-shell" id="moduleContent">
+          <article class="verification-card">
+            <div class="block-header">
+              <div>
+                <h4>Tabla de verificacion visual</h4>
+                <span class="block-copy">
+                  Comprobantes del bot y datos de la orden reunidos en una sola vista.
+                </span>
+              </div>
+              <span class="section-badge" id="pendingBadge">Pendientes: 0</span>
+            </div>
+
+            <div class="reference-upload-banner" id="referenceUploadBanner" hidden>
+              <strong>Subida de referencias desde PC</strong>
+              <p>
+                Cada fila tiene su propio boton Subir. Haz clic en ese boton dentro de la columna Referencia,
+                elige una imagen desde tu PC y la vista previa aparecera en esa misma celda.
+              </p>
+            </div>
+
+            <div class="verification-table-wrap">
+              <div class="global-actions">
+                <button class="button danger" type="button" data-global-action="delete-selected">
+                  🗑 Eliminar
+                </button>
+                <button class="button secondary" type="button" data-global-action="export-csv">
+                  📄 Imprimir CSV
+                </button>
+              </div>
+
+              <table class="verification-table">
+                <thead>
+                  <tr>
+                    <th><input type="checkbox" id="select-all"></th>
+                    <th>ID orden</th>
+                    <th>Cliente</th>
+                    <th>Comprobante cliente</th>
+                    <th>Referencia</th>
+                    <th>Similitud</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="anticiposTableBody"></tbody>
+              </table>
+            </div>
+          </article>
+        </div>
+        <div id="anticiposModalHost"></div>
       </section>
     </main>
   </div>
+
+  <template id="anticipoRowTemplate">
+    <tr>
+      <td><input type="checkbox" class="row-select" data-id=""></td>
+      <td class="verification-order-id" data-role="order-code"></td>
+      <td data-role="cliente"></td>
+      <td>
+        <img class="verification-proof is-clickable" data-role="proof-image" src="" alt="">
+      </td>
+      <td data-role="reference-cell"></td>
+      <td class="verification-similarity" data-role="similarity"></td>
+      <td>
+        <span class="status-badge" data-role="status-badge"></span>
+      </td>
+      <td>
+        <div class="verification-actions">
+          <button class="button primary" type="button" data-action="approve" data-id="">Aprobar</button>
+          <button class="button secondary" type="button" data-action="edit" data-id="">Editar</button>
+          <button class="button danger" type="button" data-action="reject" data-id="">Rechazar</button>
+        </div>
+      </td>
+    </tr>
+  </template>
+
+  <template id="referenceCellTemplate">
+    <div class="reference-cell">
+      <div class="reference-preview" data-role="reference-preview"></div>
+      <div class="reference-actions">
+        <input type="file" accept="image/*" data-reference-input hidden>
+        <button class="button secondary" type="button" data-action="upload-reference" data-id="">Subir</button>
+        <button class="button ghost" type="button" data-action="delete-reference" data-id="">Quitar</button>
+      </div>
+    </div>
+  </template>
+
+  <template id="emptyAnticiposRowTemplate">
+    <tr>
+      <td colspan="8">No hay anticipos registrados todavia.</td>
+    </tr>
+  </template>
+
+  <template id="imagePreviewModalTemplate">
+    <div class="image-preview-overlay">
+      <div class="image-preview-dialog" role="dialog" aria-modal="true" aria-label="Vista ampliada de imagen">
+        <button class="preview-close-button" type="button" data-preview-close aria-label="Cerrar vista previa">×</button>
+        <img class="image-preview-full" data-role="preview-image" src="" alt="">
+      </div>
+    </div>
+  </template>
+
+  <template id="rejectModalTemplate">
+    <div class="reject-modal-overlay">
+      <div class="reject-modal-card" role="dialog" aria-modal="true" aria-label="Mensaje de rechazo de anticipo">
+        <button class="preview-close-button" type="button" data-reject-close aria-label="Cerrar mensaje">×</button>
+        <h4>Rechazo de anticipo</h4>
+        <p><strong>Cliente:</strong> <span data-role="cliente"></span></p>
+        <p><strong>Numero:</strong> <span data-role="wa-id"></span></p>
+        <p data-role="reject-message"></p>
+        <div class="reject-modal-actions">
+          <button class="button primary" type="button" data-reject-copy>Copiar</button>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <template id="editModalTemplate">
+    <div class="edit-modal-overlay">
+      <div class="edit-modal-card" role="dialog" aria-modal="true" aria-label="Editar orden">
+        <button class="preview-close-button" type="button" data-edit-close aria-label="Cerrar">×</button>
+        <h4 data-role="edit-title">Editar Orden</h4>
+        <form id="editOrderForm">
+          <div class="form-group">
+            <label for="edit_id_orden">ID Orden</label>
+            <input type="text" id="edit_id_orden" name="id_orden" required>
+          </div>
+          <div class="form-group">
+            <label for="edit_product_type">Tipo de Producto</label>
+            <input type="text" id="edit_product_type" name="product_type">
+          </div>
+          <div class="form-group">
+            <label for="edit_product_name">Nombre del Producto</label>
+            <input type="text" id="edit_product_name" name="product_name">
+          </div>
+          <div class="form-group">
+            <label for="edit_colors">Colores</label>
+            <input type="text" id="edit_colors" name="colors">
+          </div>
+          <div class="form-group">
+            <label for="edit_length_cm">Largo (cm)</label>
+            <input type="text" id="edit_length_cm" name="length_cm">
+          </div>
+          <div class="form-group">
+            <label for="edit_width_cm">Ancho (cm)</label>
+            <input type="text" id="edit_width_cm" name="width_cm">
+          </div>
+          <div class="form-group">
+            <label for="edit_description">Descripción</label>
+            <textarea id="edit_description" name="description"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="edit_full_name">Nombre Completo</label>
+            <input type="text" id="edit_full_name" name="full_name">
+          </div>
+          <div class="form-group">
+            <label for="edit_delivery">Entrega</label>
+            <input type="text" id="edit_delivery" name="delivery">
+          </div>
+          <div class="form-group">
+            <label for="edit_date">Fecha</label>
+            <input type="text" id="edit_date" name="date">
+          </div>
+          <div class="form-group">
+            <label for="edit_deadline">Fecha Limite</label>
+            <input type="text" id="edit_deadline" name="deadline">
+          </div>
+          <div class="form-group">
+            <label for="edit_quote_min">Cotizacion Minima</label>
+            <input type="number" id="edit_quote_min" name="quote_min">
+          </div>
+          <div class="form-group">
+            <label for="edit_quote_max">Cotizacion Maxima</label>
+            <input type="number" id="edit_quote_max" name="quote_max">
+          </div>
+          <div class="edit-modal-actions">
+            <button type="button" class="button secondary" data-edit-close>Cancelar</button>
+            <button type="submit" class="button primary">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </template>
 
   <script src="js/shared-layout-admin.js?v=20260327b"></script>
   <script src="js/admin-data.js?v=20260327b"></script>
